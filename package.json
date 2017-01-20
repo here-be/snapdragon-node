@@ -1,0 +1,60 @@
+{
+  "name": "snapdragon-node",
+  "description": "Snapdragon utility for creating a new AST node in custom code, like plugins.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jonschlinkert/snapdragon-node",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/snapdragon-node",
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/snapdragon-node/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "define-property": "^0.2.5",
+    "isobject": "^3.0.0"
+  },
+  "devDependencies": {
+    "gulp-format-md": "^0.1.11",
+    "mocha": "^3.2.0",
+    "snapdragon": "^0.8.1"
+  },
+  "keywords": [
+    "generategenerator",
+    "node",
+    "snapdragon"
+  ],
+  "verb": {
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "related": {
+      "list": [
+        "snapdragon",
+        "snapdragon-util",
+        "snapdragon-capture"
+      ]
+    },
+    "reflinks": [
+      "verb",
+      "verb-generate-readme"
+    ],
+    "lint": {
+      "reflinks": true
+    }
+  }
+}
