@@ -1,6 +1,6 @@
 # snapdragon-node [![NPM version](https://img.shields.io/npm/v/snapdragon-node.svg?style=flat)](https://www.npmjs.com/package/snapdragon-node) [![NPM monthly downloads](https://img.shields.io/npm/dm/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node)  [![NPM total downloads](https://img.shields.io/npm/dt/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/snapdragon-node.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/snapdragon-node)
 
-> Snapdragon utility for creating a new AST node in custom code, like plugins.
+> Snapdragon utility for creating a new AST node in custom code, such as plugins.
 
 ## Install
 
@@ -13,7 +13,17 @@ $ npm install --save snapdragon-node
 ## Usage
 
 ```js
-var snapdragon-node = require('snapdragon-node');
+var Node = require('snapdragon-node');
+var Snapdragon = require('snapdragon');
+var snapdragon = new Snapdragon();
+
+snapdragon.parser.set('foo', function() {
+  var pos = this.position();
+  var match = this.match(/foo/);
+  if (match) {
+    return new Node(pos, match[0]);
+  }
+});
 ```
 
 ## About
