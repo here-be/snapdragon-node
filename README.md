@@ -49,7 +49,7 @@ snapdragon.parser.set('foo', function() {
 
 ## API
 
-### [Node](index.js#L22)
+### [Node](index.js#L20)
 
 Create a new AST `Node` with the given `val` and `type`.
 
@@ -66,7 +66,7 @@ var node = new Node('*', 'Star');
 var node = new Node({type: 'star', val: '*'});
 ```
 
-### [.define](index.js#L51)
+### [.define](index.js#L49)
 
 Define a non-enumberable property on the node instance.
 
@@ -83,7 +83,7 @@ var node = new Node();
 node.define('foo', 'something non-enumerable');
 ```
 
-### [.pushNode](index.js#L71)
+### [.pushNode](index.js#L69)
 
 Given node `foo` and node `bar`, push node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
@@ -100,11 +100,11 @@ var bar = new Node({type: 'bar'});
 foo.pushNode(bar);
 ```
 
-### [.addNode](index.js#L83)
+### [.addNode](index.js#L81)
 
 Alias for [pushNode](#pushNode) for backwards compatibility with 0.1.0.
 
-### [.unshiftNode](index.js#L102)
+### [.unshiftNode](index.js#L100)
 
 Given node `foo` and node `bar`, unshift node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
@@ -121,7 +121,7 @@ var bar = new Node({type: 'bar'});
 foo.unshiftNode(bar);
 ```
 
-### [.getNode](index.js#L124)
+### [.getNode](index.js#L122)
 
 Get the first child node from `node.nodes` that matches the given `type`. If `type` is a number, the child node at that index is returned.
 
@@ -139,7 +139,7 @@ var child = node.getNode(/^(foo|bar)$/);
 var child = node.getNode(['foo', 'bar']);
 ```
 
-### [.isType](index.js#L143)
+### [.isType](index.js#L141)
 
 Return true if the node is the given `type`.
 
@@ -157,7 +157,7 @@ cosole.log(node.isType(/^(foo|bar)$/));  // true
 cosole.log(node.isType(['foo', 'bar'])); // true
 ```
 
-### [.hasType](index.js#L165)
+### [.hasType](index.js#L163)
 
 Return true if the `node.nodes` has the given `type`.
 
@@ -178,7 +178,7 @@ cosole.log(foo.hasType(/^(qux|bar)$/));  // true
 cosole.log(foo.hasType(['qux', 'bar'])); // true
 ```
 
-### [.siblings](index.js#L187)
+### [.siblings](index.js#L185)
 
 Get the siblings array, or `null` if it doesn't exist.
 
@@ -197,7 +197,7 @@ console.log(bar.siblings.length) // 2
 console.log(baz.siblings.length) // 2
 ```
 
-### [.prev](index.js#L208)
+### [.prev](index.js#L206)
 
 Get the previous node from the siblings array or `null`.
 
@@ -215,7 +215,7 @@ foo.pushNode(baz);
 console.log(baz.prev.type) // 'bar'
 ```
 
-### [.next](index.js#L232)
+### [.next](index.js#L230)
 
 Get the siblings array, or `null` if it doesn't exist.
 
@@ -234,7 +234,7 @@ console.log(bar.siblings.length) // 2
 console.log(baz.siblings.length) // 2
 ```
 
-### [.index](index.js#L260)
+### [.index](index.js#L258)
 
 Get the node's current index from `node.parent.nodes`. This should always be correct, even when the parent adds nodes.
 
@@ -256,7 +256,7 @@ console.log(baz.index) // 2
 console.log(qux.index) // 0
 ```
 
-### [.first](index.js#L288)
+### [.first](index.js#L286)
 
 Get the first node from `node.nodes`.
 
@@ -276,7 +276,7 @@ foo.pushNode(qux);
 console.log(foo.first.type) // 'bar'
 ```
 
-### [.last](index.js#L311)
+### [.last](index.js#L309)
 
 Get the last node from `node.nodes`.
 
