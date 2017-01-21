@@ -22,6 +22,7 @@
   "dependencies": {
     "define-property": "^0.2.5",
     "isobject": "^3.0.0",
+    "lazy-cache": "^2.0.2",
     "snapdragon-util": "^1.0.2"
   },
   "devDependencies": {

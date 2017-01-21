@@ -1,9 +1,7 @@
 'use strict';
 
-var utils = require('snapdragon-util');
-var define = require('define-property');
-var isObject = require('isobject');
 var getters = ['siblings', 'index', 'first', 'lext', 'prev', 'next'];
+var utils = require('./utils');
 
 /**
  * Create a new AST `Node` with the given `val` and `type`.
@@ -22,7 +20,7 @@ var getters = ['siblings', 'index', 'first', 'lext', 'prev', 'next'];
 class Node {
   constructor(val, type) {
     this.define('isNode', true);
-    if (isObject(val)) {
+    if (utils.isObject(val)) {
       for (var key in val) {
         if (getters.indexOf(key) === -1) {
           this[key] = val[key];
@@ -49,7 +47,7 @@ class Node {
    */
 
   define(name, val) {
-    define(this, name, val);
+    utils.define(this, name, val);
     return this;
   }
 
@@ -70,7 +68,7 @@ class Node {
 
   pushNode(node) {
     this.nodes = this.nodes || [];
-    define(node, 'parent', this);
+    utils.define(node, 'parent', this);
     this.nodes.push(node);
   }
 
@@ -101,7 +99,7 @@ class Node {
 
   unshiftNode(node) {
     this.nodes = this.nodes || [];
-    define(node, 'parent', this);
+    utils.define(node, 'parent', this);
     this.nodes.unshift(node);
   }
 
@@ -122,7 +120,7 @@ class Node {
    */
 
   getNode(type) {
-    return utils.getNode(this.nodes, type);
+    return utils.su.getNode(this.nodes, type);
   }
 
   /**
@@ -141,7 +139,7 @@ class Node {
    */
 
   isType(type) {
-    return utils.isType(this, type);
+    return utils.su.isType(this, type);
   }
 
   /**
@@ -163,7 +161,7 @@ class Node {
    */
 
   hasType(type) {
-    return utils.hasType(this, type);
+    return utils.su.hasType(this, type);
   }
 
   /**
@@ -286,7 +284,7 @@ class Node {
    */
 
   get first() {
-    return utils.arrayify(this.nodes)[0];
+    return utils.su.arrayify(this.nodes)[0];
   }
 
   /**
@@ -309,12 +307,12 @@ class Node {
    */
 
   get last() {
-    return utils.last(utils.arrayify(this.nodes));
+    return utils.su.last(utils.su.arrayify(this.nodes));
   }
 };
 
 /**
- * Expose `Node`
+ * expose `Node`
  */
 
 module.exports = Node;
