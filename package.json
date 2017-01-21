@@ -1,7 +1,7 @@
 {
   "name": "snapdragon-node",
   "description": "Snapdragon utility for creating a new AST node in custom code, such as plugins.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/jonschlinkert/snapdragon-node",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/snapdragon-node",
