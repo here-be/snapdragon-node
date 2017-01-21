@@ -23,7 +23,7 @@ describe('snapdragon-node', function() {
 
   it('should create a new Node with the given position', function() {
     var pos = parser.position();
-    var node = new Node(pos);
+    var node = pos(new Node());
 
     assert(node.position);
     assert(node.position.start);
@@ -37,7 +37,7 @@ describe('snapdragon-node', function() {
 
   it('should create a new Node with the given position and val', function() {
     var pos = parser.position();
-    var node = new Node(pos, '*');
+    var node = pos(new Node('*'));
 
     assert.equal(node.val, '*');
 
@@ -53,7 +53,7 @@ describe('snapdragon-node', function() {
 
   it('should create a new Node with the given position, type, and val', function() {
     var pos = parser.position();
-    var node = new Node(pos, '*', 'star');
+    var node = pos(new Node('*', 'star'));
 
     assert.equal(node.val, '*');
     assert.equal(node.type, 'star');
@@ -70,7 +70,7 @@ describe('snapdragon-node', function() {
 
   it('should create a new Node with the given position and object', function() {
     var pos = parser.position();
-    var node = new Node(pos, {val: '*', type: 'star'});
+    var node = pos(new Node({val: '*', type: 'star'}));
 
     assert.equal(node.val, '*');
     assert.equal(node.type, 'star');

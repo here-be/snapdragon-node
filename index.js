@@ -4,14 +4,8 @@ var define = require('define-property');
 var isObject = require('isobject');
 
 class Node {
-  constructor(pos, val, type) {
+  constructor(val, type) {
     this.define('isNode', true);
-    if (typeof pos !== 'function') {
-      type = val;
-      val = pos;
-      pos = null;
-    }
-
     if (isObject(val)) {
       for (var key in val) {
         this[key] = val[key];
@@ -19,11 +13,6 @@ class Node {
     } else {
       this.type = type;
       this.val = val;
-    }
-
-    // set the current position, if provided
-    if (typeof pos === 'function') {
-      pos(this);
     }
   }
 
@@ -34,7 +23,7 @@ class Node {
 
   addNode(node) {
     this.nodes = this.nodes || [];
-    node.index = this.nodes.length;
+    node.define('index', this.nodes.length);
     node.define('parent', this);
     node.define('siblings', this.nodes);
     this.nodes.push(node);
