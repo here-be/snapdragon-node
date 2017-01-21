@@ -256,7 +256,7 @@ console.log(baz.index) // 2
 console.log(qux.index) // 0
 ```
 
-### [.first](index.js#L286)
+### [.first](index.js#L281)
 
 Get the first node from `node.nodes`.
 
@@ -276,7 +276,7 @@ foo.pushNode(qux);
 console.log(foo.first.type) // 'bar'
 ```
 
-### [.last](index.js#L309)
+### [.last](index.js#L304)
 
 Get the last node from `node.nodes`.
 
