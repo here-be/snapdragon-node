@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "define-property": "^0.2.5",
-    "isobject": "^3.0.0"
+    "isobject": "^3.0.0",
+    "snapdragon-util": "^1.0.0"
   },
   "devDependencies": {
     "gulp-format-md": "^0.1.11",
@@ -34,7 +35,7 @@
     "snapdragon"
   ],
   "verb": {
-    "toc": false,
+    "toc": "collapsible",
     "layout": "default",
     "tasks": [
       "readme"
