@@ -256,12 +256,7 @@ class Node {
    */
 
   get index() {
-    if (!this.siblings) return -1;
-    for (var i = 0; i < this.siblings.length; i++) {
-      if (this === this.siblings[i]) {
-        return i;
-      }
-    }
+    return this.siblings ? this.siblings.indexOf(this) : -1;
   }
 
   /**
