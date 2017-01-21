@@ -12,6 +12,8 @@ $ npm install --save snapdragon-node
 
 ## Usage
 
+With [snapdragon](https://github.com/jonschlinkert/snapdragon) v0.9.0 and higher you can use `this.node()` to create a new `Node`, whenever it makes sense.
+
 ```js
 var Node = require('snapdragon-node');
 var Snapdragon = require('snapdragon');
@@ -21,7 +23,7 @@ snapdragon.parser.set('foo', function() {
   var pos = this.position();
   var match = this.match(/foo/);
   if (match) {
-    return new Node(pos, match[0]);
+    return pos(new Node(match[0]));
   }
 });
 ```
