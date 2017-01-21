@@ -1,6 +1,6 @@
 'use strict';
 
-var getters = ['siblings', 'index', 'first', 'lext', 'prev', 'next'];
+var getters = ['siblings', 'index', 'first', 'last', 'prev', 'next'];
 var utils = require('./utils');
 
 /**
