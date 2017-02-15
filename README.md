@@ -2,14 +2,6 @@
 
 > Snapdragon utility for creating a new AST node in custom code, such as plugins.
 
-<details>
-<summary><strong>Table of Contents</strong></summary>
-- [Install](#install)
-- [Usage](#usage)
-- [API](#api)
-- [About](#about)
-</details>
-
 ## Install
 
 Install with [npm](https://www.npmjs.com/):
@@ -66,7 +58,7 @@ var node = new Node('*', 'Star');
 var node = new Node({type: 'star', val: '*'});
 ```
 
-### [.define](index.js#L49)
+### [.define](index.js#L50)
 
 Define a non-enumberable property on the node instance.
 
@@ -83,7 +75,7 @@ var node = new Node();
 node.define('foo', 'something non-enumerable');
 ```
 
-### [.pushNode](index.js#L69)
+### [.pushNode](index.js#L70)
 
 Given node `foo` and node `bar`, push node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
@@ -100,11 +92,11 @@ var bar = new Node({type: 'bar'});
 foo.pushNode(bar);
 ```
 
-### [.addNode](index.js#L81)
+### [.addNode](index.js#L82)
 
 Alias for [pushNode](#pushNode) for backwards compatibility with 0.1.0.
 
-### [.unshiftNode](index.js#L100)
+### [.unshiftNode](index.js#L101)
 
 Given node `foo` and node `bar`, unshift node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
@@ -121,7 +113,7 @@ var bar = new Node({type: 'bar'});
 foo.unshiftNode(bar);
 ```
 
-### [.getNode](index.js#L122)
+### [.getNode](index.js#L123)
 
 Get the first child node from `node.nodes` that matches the given `type`. If `type` is a number, the child node at that index is returned.
 
@@ -139,7 +131,7 @@ var child = node.getNode(/^(foo|bar)$/);
 var child = node.getNode(['foo', 'bar']);
 ```
 
-### [.isType](index.js#L141)
+### [.isType](index.js#L142)
 
 Return true if the node is the given `type`.
 
@@ -157,7 +149,7 @@ cosole.log(node.isType(/^(foo|bar)$/));  // true
 cosole.log(node.isType(['foo', 'bar'])); // true
 ```
 
-### [.hasType](index.js#L163)
+### [.hasType](index.js#L164)
 
 Return true if the `node.nodes` has the given `type`.
 
@@ -178,7 +170,7 @@ cosole.log(foo.hasType(/^(qux|bar)$/));  // true
 cosole.log(foo.hasType(['qux', 'bar'])); // true
 ```
 
-### [.siblings](index.js#L185)
+### [.siblings](index.js#L186)
 
 Get the siblings array, or `null` if it doesn't exist.
 
@@ -197,7 +189,7 @@ console.log(bar.siblings.length) // 2
 console.log(baz.siblings.length) // 2
 ```
 
-### [.prev](index.js#L206)
+### [.prev](index.js#L209)
 
 Get the previous node from the siblings array or `null`.
 
@@ -215,7 +207,7 @@ foo.pushNode(baz);
 console.log(baz.prev.type) // 'bar'
 ```
 
-### [.next](index.js#L230)
+### [.next](index.js#L235)
 
 Get the siblings array, or `null` if it doesn't exist.
 
@@ -234,7 +226,7 @@ console.log(bar.siblings.length) // 2
 console.log(baz.siblings.length) // 2
 ```
 
-### [.index](index.js#L258)
+### [.index](index.js#L265)
 
 Get the node's current index from `node.parent.nodes`. This should always be correct, even when the parent adds nodes.
 
@@ -256,7 +248,7 @@ console.log(baz.index) // 2
 console.log(qux.index) // 0
 ```
 
-### [.first](index.js#L281)
+### [.first](index.js#L290)
 
 Get the first node from `node.nodes`.
 
@@ -276,7 +268,7 @@ foo.pushNode(qux);
 console.log(foo.first.type) // 'bar'
 ```
 
-### [.last](index.js#L304)
+### [.last](index.js#L315)
 
 Get the last node from `node.nodes`.
 
@@ -300,9 +292,11 @@ console.log(foo.last.type) // 'qux'
 
 ### Related projects
 
+* [breakdance](https://www.npmjs.com/package/breakdance): Breakdance is a node.js library for converting HTML to markdown. Highly pluggable, flexible and easy… [more](http://breakdance.io) | [homepage](http://breakdance.io "Breakdance is a node.js library for converting HTML to markdown. Highly pluggable, flexible and easy to use. It's time for your markup to get down.")
 * [snapdragon-capture](https://www.npmjs.com/package/snapdragon-capture): Snapdragon plugin that adds a capture method to the parser instance. | [homepage](https://github.com/jonschlinkert/snapdragon-capture "Snapdragon plugin that adds a capture method to the parser instance.")
+* [snapdragon-cheerio](https://www.npmjs.com/package/snapdragon-cheerio): Snapdragon plugin for converting a cheerio AST to a snapdragon AST. | [homepage](https://github.com/jonschlinkert/snapdragon-cheerio "Snapdragon plugin for converting a cheerio AST to a snapdragon AST.")
 * [snapdragon-util](https://www.npmjs.com/package/snapdragon-util): Utilities for the snapdragon parser/compiler. | [homepage](https://github.com/jonschlinkert/snapdragon-util "Utilities for the snapdragon parser/compiler.")
-* [snapdragon](https://www.npmjs.com/package/snapdragon): Fast, pluggable and easy-to-use parser-renderer factory. | [homepage](https://github.com/jonschlinkert/snapdragon "Fast, pluggable and easy-to-use parser-renderer factory.")
+* [snapdragon](https://www.npmjs.com/package/snapdragon): Easy-to-use plugin system for creating powerful, fast and versatile parsers and compilers, with built-in source-map… [more](https://github.com/jonschlinkert/snapdragon) | [homepage](https://github.com/jonschlinkert/snapdragon "Easy-to-use plugin system for creating powerful, fast and versatile parsers and compilers, with built-in source-map support.")
 
 ### Contributing
 
@@ -312,20 +306,20 @@ Please read the [contributing guide](.github/contributing.md) for advice on open
 
 ### Building docs
 
-_(This document was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme) (a [verb](https://github.com/verbose/verb) generator), please don't edit the readme directly. Any changes to the readme must be made in [.verb.md](.verb.md).)_
+_(This project's readme.md is generated by [verb](https://github.com/verbose/verb-generate-readme), please don't edit the readme directly. Any changes to the readme must be made in the [.verb.md](.verb.md) readme template.)_
 
-To generate the readme and API documentation with [verb](https://github.com/verbose/verb):
+To generate the readme, run the following command:
 
 ```sh
-$ npm install -g verb verb-generate-readme && verb
+$ npm install -g verbose/verb#dev verb-generate-readme && verb
 ```
 
 ### Running tests
 
-Install dev dependencies:
+Running and reviewing unit tests is a great way to get familiarized with a library and its API. You can install dependencies and run tests with the following command:
 
 ```sh
-$ npm install -d && npm test
+$ npm install && npm test
 ```
 
 ### Author
@@ -338,8 +332,8 @@ $ npm install -d && npm test
 ### License
 
 Copyright © 2017, [Jon Schlinkert](https://github.com/jonschlinkert).
-Released under the [MIT license](LICENSE).
+MIT
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.4.1, on January 21, 2017._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.4.2, on February 15, 2017._
