@@ -1,7 +1,7 @@
 {
   "name": "snapdragon-node",
   "description": "Snapdragon utility for creating a new AST node in custom code, such as plugins.",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "homepage": "https://github.com/jonschlinkert/snapdragon-node",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/snapdragon-node",
@@ -15,7 +15,7 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": ">=4"
+    "node": ">=4.7"
   },
   "scripts": {
     "test": "mocha"
@@ -24,28 +24,30 @@
     "define-property": "^0.2.5",
     "isobject": "^3.0.0",
     "lazy-cache": "^2.0.2",
-    "snapdragon-util": "^1.0.2"
+    "snapdragon-util": "^1.0.3"
   },
   "devDependencies": {
     "gulp-format-md": "^0.1.11",
     "mocha": "^3.2.0",
-    "snapdragon": "^0.9.0",
+    "snapdragon": "^0.9.1",
     "snapdragon-capture-set": "^1.0.1"
   },
   "keywords": [
     "ast",
     "compile",
     "compiler",
+    "convert",
     "node",
     "parse",
     "parser",
     "plugin",
+    "render",
     "snapdragon",
     "snapdragonplugin",
-    "token"
+    "token",
+    "transform"
   ],
   "verb": {
-    "toc": "collapsible",
     "layout": "default",
     "tasks": [
       "readme"
@@ -57,7 +59,9 @@
       "list": [
         "snapdragon",
         "snapdragon-capture",
-        "snapdragon-util"
+        "snapdragon-util",
+        "snapdragon-cheerio",
+        "breakdance"
       ]
     },
     "reflinks": [
