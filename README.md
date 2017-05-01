@@ -1,4 +1,4 @@
-# snapdragon-node [![NPM version](https://img.shields.io/npm/v/snapdragon-node.svg?style=flat)](https://www.npmjs.com/package/snapdragon-node) [![NPM monthly downloads](https://img.shields.io/npm/dm/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node)  [![NPM total downloads](https://img.shields.io/npm/dt/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/snapdragon-node.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/snapdragon-node)
+# snapdragon-node [![NPM version](https://img.shields.io/npm/v/snapdragon-node.svg?style=flat)](https://www.npmjs.com/package/snapdragon-node) [![NPM monthly downloads](https://img.shields.io/npm/dm/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![NPM total downloads](https://img.shields.io/npm/dt/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/snapdragon-node.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/snapdragon-node)
 
 > Snapdragon utility for creating a new AST node in custom code, such as plugins.
 
@@ -21,27 +21,25 @@ var snapdragon = new Snapdragon();
 
 // example usage inside a parser visitor function
 snapdragon.parser.set('foo', function() {
+  // get the current "start" position
   var pos = this.position();
-  // if the regex matches the substring at the current position
-  // on `this.input`, return the match
+
+  // returns the match if regex matches the substring 
+  // at the current position on `parser.input`
   var match = this.match(/foo/);
   if (match) {
-    // if node.type is not defined on the node, the parser
-    // will automatically add it
-    var node = pos(new Node(match[0]));
-
-    // or, explictly pass a type
-    var node = pos(new Node(match[0], 'bar'));
-    // or
-    var node = pos(new Node({type: 'bar', val: match[0]}));
-    return node;
+    // call "pos" on the node, to set the start and end 
+    // positions, and return the node to push it onto the AST
+    // (snapdragon will push the node onto the correct
+    // nodes array, based on the stack)
+    return pos(new Node({type: 'bar', val: match[0]}));
   }
 });
 ```
 
 ## API
 
-### [Node](index.js#L20)
+### [Node](index.js#L29)
 
 Create a new AST `Node` with the given `val` and `type`.
 
@@ -58,9 +56,27 @@ var node = new Node('*', 'Star');
 var node = new Node({type: 'star', val: '*'});
 ```
 
-### [.define](index.js#L50)
+### [.isNode](index.js#L61)
 
-Define a non-enumberable property on the node instance.
+Returns true if the given value is a node.
+
+**Params**
+
+* `node` **{Object}**
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+var Node = require('snapdragon-node');
+var node = new Node({type: 'foo'});
+console.log(Node.isNode(node)); //=> true
+console.log(Node.isNode({})); //=> false
+```
+
+### [.define](index.js#L80)
+
+Define a non-enumberable property on the node instance. Useful for adding properties that shouldn't be extended or visible during debugging.
 
 **Params**
 
@@ -75,45 +91,116 @@ var node = new Node();
 node.define('foo', 'something non-enumerable');
 ```
 
-### [.pushNode](index.js#L70)
+### [.isEmpty](index.js#L101)
+
+Returns true if `node.val` is an empty string, or `node.nodes` does not contain any non-empty text nodes.
+
+**Params**
+
+* `fn` **{Function}**: (optional) Filter function that is called on `node` and/or child nodes. `isEmpty` will return false immediately when the filter function returns false on any nodes.
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+var node = new Node({type: 'text'});
+node.isEmpty(); //=> true
+node.val = 'foo';
+node.isEmpty(); //=> false
+```
+
+### [.push](index.js#L119)
 
 Given node `foo` and node `bar`, push node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
 **Params**
 
 * `node` **{Object}**
-* `returns` **{undefined}**
+* `returns` **{Number}**: Returns the length of `node.nodes`
 
 **Example**
 
 ```js
 var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
-foo.pushNode(bar);
+foo.push(bar);
 ```
 
-### [.addNode](index.js#L82)
-
-Alias for [pushNode](#pushNode) for backwards compatibility with 0.1.0.
-
-### [.unshiftNode](index.js#L101)
+### [.unshift](index.js#L141)
 
 Given node `foo` and node `bar`, unshift node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
 **Params**
 
 * `node` **{Object}**
-* `returns` **{undefined}**
+* `returns` **{Number}**: Returns the length of `node.nodes`
 
 **Example**
 
 ```js
 var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
-foo.unshiftNode(bar);
+foo.unshift(bar);
 ```
 
-### [.getNode](index.js#L123)
+### [.pop](index.js#L168)
+
+Pop a node from `node.nodes`.
+
+* `returns` **{Number}**: Returns the popped `node`
+
+**Example**
+
+```js
+var node = new Node({type: 'foo'});
+node.push(new Node({type: 'a'}));
+node.push(new Node({type: 'b'}));
+node.push(new Node({type: 'c'}));
+node.push(new Node({type: 'd'}));
+console.log(node.nodes.length);
+//=> 4
+node.pop();
+console.log(node.nodes.length);
+//=> 3
+```
+
+### [.shift](index.js#L191)
+
+Shift a node from `node.nodes`.
+
+* `returns` **{Object}**: Returns the shifted `node`
+
+**Example**
+
+```js
+var node = new Node({type: 'foo'});
+node.push(new Node({type: 'a'}));
+node.push(new Node({type: 'b'}));
+node.push(new Node({type: 'c'}));
+node.push(new Node({type: 'd'}));
+console.log(node.nodes.length);
+//=> 4
+node.shift();
+console.log(node.nodes.length);
+//=> 3
+```
+
+### [.remove](index.js#L206)
+
+Remove `node` from `node.nodes`.
+
+**Params**
+
+* `node` **{Object}**
+* `returns` **{Object}**: Returns the removed node.
+
+**Example**
+
+```js
+node.remove(childNode);
+```
+
+### [.find](index.js#L231)
 
 Get the first child node from `node.nodes` that matches the given `type`. If `type` is a number, the child node at that index is returned.
 
@@ -125,13 +212,13 @@ Get the first child node from `node.nodes` that matches the given `type`. If `ty
 **Example**
 
 ```js
-var child = node.getNode(1); //<= index of the node to get
-var child = node.getNode('foo');
-var child = node.getNode(/^(foo|bar)$/);
-var child = node.getNode(['foo', 'bar']);
+var child = node.find(1); //<= index of the node to get
+var child = node.find('foo');
+var child = node.find(/^(foo|bar)$/);
+var child = node.find(['foo', 'bar']);
 ```
 
-### [.isType](index.js#L142)
+### [.isType](index.js#L249)
 
 Return true if the node is the given `type`.
 
@@ -149,7 +236,7 @@ cosole.log(node.isType(/^(foo|bar)$/));  // true
 cosole.log(node.isType(['foo', 'bar'])); // true
 ```
 
-### [.hasType](index.js#L164)
+### [.hasType](index.js#L270)
 
 Return true if the `node.nodes` has the given `type`.
 
@@ -163,16 +250,12 @@ Return true if the `node.nodes` has the given `type`.
 ```js
 var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
-foo.pushNode(bar);
+foo.push(bar);
 
 cosole.log(foo.hasType('qux'));          // false
 cosole.log(foo.hasType(/^(qux|bar)$/));  // true
 cosole.log(foo.hasType(['qux', 'bar'])); // true
 ```
-
-### [.siblings](index.js#L186)
-
-Get the siblings array, or `null` if it doesn't exist.
 
 * `returns` **{Array}**
 
@@ -182,53 +265,12 @@ Get the siblings array, or `null` if it doesn't exist.
 var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
 var baz = new Node({type: 'baz'});
-foo.pushNode(bar);
-foo.pushNode(baz);
+foo.push(bar);
+foo.push(baz);
 
 console.log(bar.siblings.length) // 2
 console.log(baz.siblings.length) // 2
 ```
-
-### [.prev](index.js#L209)
-
-Get the previous node from the siblings array or `null`.
-
-* `returns` **{Object}**
-
-**Example**
-
-```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-foo.pushNode(bar);
-foo.pushNode(baz);
-
-console.log(baz.prev.type) // 'bar'
-```
-
-### [.next](index.js#L235)
-
-Get the siblings array, or `null` if it doesn't exist.
-
-* `returns` **{Object}**
-
-**Example**
-
-```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-foo.pushNode(bar);
-foo.pushNode(baz);
-
-console.log(bar.siblings.length) // 2
-console.log(baz.siblings.length) // 2
-```
-
-### [.index](index.js#L265)
-
-Get the node's current index from `node.parent.nodes`. This should always be correct, even when the parent adds nodes.
 
 * `returns` **{Number}**
 
@@ -239,18 +281,43 @@ var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
 var baz = new Node({type: 'baz'});
 var qux = new Node({type: 'qux'});
-foo.pushNode(bar);
-foo.pushNode(baz);
-foo.unshiftNode(qux);
+foo.push(bar);
+foo.push(baz);
+foo.unshift(qux);
 
 console.log(bar.index) // 1
 console.log(baz.index) // 2
 console.log(qux.index) // 0
 ```
 
-### [.first](index.js#L290)
+* `returns` **{Object}**
 
-Get the first node from `node.nodes`.
+**Example**
+
+```js
+var foo = new Node({type: 'foo'});
+var bar = new Node({type: 'bar'});
+var baz = new Node({type: 'baz'});
+foo.push(bar);
+foo.push(baz);
+
+console.log(baz.prev.type) // 'bar'
+```
+
+* `returns` **{Object}**
+
+**Example**
+
+```js
+var foo = new Node({type: 'foo'});
+var bar = new Node({type: 'bar'});
+var baz = new Node({type: 'baz'});
+foo.push(bar);
+foo.push(baz);
+
+console.log(bar.siblings.length) // 2
+console.log(baz.siblings.length) // 2
+```
 
 * `returns` **{Object}**: The first node, or undefiend
 
@@ -261,16 +328,12 @@ var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
 var baz = new Node({type: 'baz'});
 var qux = new Node({type: 'qux'});
-foo.pushNode(bar);
-foo.pushNode(baz);
-foo.pushNode(qux);
+foo.push(bar);
+foo.push(baz);
+foo.push(qux);
 
 console.log(foo.first.type) // 'bar'
 ```
-
-### [.last](index.js#L315)
-
-Get the last node from `node.nodes`.
 
 * `returns` **{Object}**: The last node, or undefiend
 
@@ -281,12 +344,47 @@ var foo = new Node({type: 'foo'});
 var bar = new Node({type: 'bar'});
 var baz = new Node({type: 'baz'});
 var qux = new Node({type: 'qux'});
-foo.pushNode(bar);
-foo.pushNode(baz);
-foo.pushNode(qux);
+foo.push(bar);
+foo.push(baz);
+foo.push(qux);
 
 console.log(foo.last.type) // 'qux'
 ```
+
+## Release history
+
+Changelog entries are classified using the following labels from [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog):
+
+* `added`: for new features
+* `changed`: for changes in existing functionality
+* `deprecated`: for once-stable features removed in upcoming releases
+* `removed`: for deprecated features removed in this release
+* `fixed`: for any bug fixes
+
+Custom labels used in this changelog:
+
+* `dependencies`: bumps dependencies
+* `housekeeping`: code re-organization, minor edits, or other changes that don't fit in one of the other categories.
+
+### [2.0.0] - 2017-05-01
+
+**Changed**
+
+* `.unshiftNode` was renamed to [.unshift](#unshift)
+* `.pushNode` was renamed to [.push](#push)
+* `.getNode` was renamed to [.find](#find)
+
+**Added**
+
+* [.isNode](#isNode)
+* [.isEmpty](#isEmpty)
+* [.pop](#pop)
+* [.shift](#shift)
+* [.remove](#remove)
+
+### [0.1.0]
+
+First release.
 
 ## About
 
@@ -332,8 +430,8 @@ $ npm install && npm test
 ### License
 
 Copyright © 2017, [Jon Schlinkert](https://github.com/jonschlinkert).
-MIT
+Released under the [MIT License](LICENSE).
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.4.2, on February 15, 2017._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.6.0, on May 01, 2017._
