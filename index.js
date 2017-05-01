@@ -1,7 +1,16 @@
 'use strict';
 
+var assert = require('assert');
+var isObject = require('isobject');
+var define = require('define-property');
+var utils = require('snapdragon-util');
 var getters = ['siblings', 'index', 'first', 'last', 'prev', 'next'];
-var utils = require('./utils');
+
+/**
+ * Expose `Node`
+ */
+
+exports = module.exports = Node;
 
 /**
  * Create a new AST `Node` with the given `val` and `type`.
@@ -17,12 +26,14 @@ var utils = require('./utils');
  * @api public
  */
 
-var Node = exports = module.exports = function Node(val, type) {
+function Node(val, type, parent) {
+  this.define('parent', parent);
   this.define('isNode', true);
-  this.type = null;
 
-  if (utils.isObject(val)) {
-    for (var key in val) {
+  if (isObject(val)) {
+    var keys = Object.keys(val);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
       if (getters.indexOf(key) === -1) {
         this[key] = val[key];
       }
@@ -31,16 +42,35 @@ var Node = exports = module.exports = function Node(val, type) {
     this.type = type;
     this.val = val;
   }
+}
+
+/**
+ * Returns true if the given value is a node.
+ *
+ * ```js
+ * var Node = require('snapdragon-node');
+ * var node = new Node({type: 'foo'});
+ * console.log(Node.isNode(node)); //=> true
+ * console.log(Node.isNode({})); //=> false
+ * ```
+ * @param {Object} `node`
+ * @returns {Boolean}
+ * @api public
+ */
+
+Node.isNode = function(node) {
+  return utils.isNode(node);
 };
 
 /**
  * Define a non-enumberable property on the node instance.
+ * Useful for adding properties that shouldn't be extended
+ * or visible during debugging.
  *
  * ```js
  * var node = new Node();
  * node.define('foo', 'something non-enumerable');
  * ```
- * @name .define
  * @param {String} `name`
  * @param {any} `val`
  * @return {Object} returns the node instance
@@ -48,8 +78,28 @@ var Node = exports = module.exports = function Node(val, type) {
  */
 
 Node.prototype.define = function(name, val) {
-  utils.define(this, name, val);
+  define(this, name, val);
   return this;
+};
+
+
+/**
+ * Returns true if `node.val` is an empty string, or `node.nodes` does
+ * not contain any non-empty text nodes.
+ *
+ * ```js
+ * var node = new Node({type: 'text'});
+ * node.isEmpty(); //=> true
+ * node.val = 'foo';
+ * node.isEmpty(); //=> false
+ * ```
+ * @param {Function} `fn` (optional) Filter function that is called on `node` and/or child nodes. `isEmpty` will return false immediately when the filter function returns false on any nodes.
+ * @return {Boolean}
+ * @api public
+ */
+
+Node.prototype.isEmpty = function(fn) {
+  return utils.isEmpty(this, fn);
 };
 
 /**
@@ -59,28 +109,19 @@ Node.prototype.define = function(name, val) {
  * ```js
  * var foo = new Node({type: 'foo'});
  * var bar = new Node({type: 'bar'});
- * foo.pushNode(bar);
+ * foo.push(bar);
  * ```
- * @name .pushNode
  * @param {Object} `node`
- * @return {undefined}
+ * @return {Number} Returns the length of `node.nodes`
  * @api public
  */
 
-Node.prototype.pushNode = function(node) {
+Node.prototype.push = function(node) {
+  assert(Node.isNode(node), 'expected node to be an instance of Node');
+  define(node, 'parent', this);
+
   this.nodes = this.nodes || [];
-  utils.define(node, 'parent', this);
-  this.nodes.push(node);
-};
-
-/**
- * Alias for [pushNode](#pushNode) for backwards compatibility with 0.1.0.
- * @name .addNode
- * @api public
- */
-
-Node.prototype.addNode = function(node) {
-  return this.pushNode(node);
+  return this.nodes.push(node);
 };
 
 /**
@@ -90,18 +131,86 @@ Node.prototype.addNode = function(node) {
  * ```js
  * var foo = new Node({type: 'foo'});
  * var bar = new Node({type: 'bar'});
- * foo.unshiftNode(bar);
+ * foo.unshift(bar);
  * ```
- * @name .unshiftNode
  * @param {Object} `node`
- * @return {undefined}
+ * @return {Number} Returns the length of `node.nodes`
  * @api public
  */
 
-Node.prototype.unshiftNode = function(node) {
+Node.prototype.unshift = function(node) {
+  assert(Node.isNode(node), 'expected node to be an instance of Node');
+  define(node, 'parent', this);
+
   this.nodes = this.nodes || [];
-  utils.define(node, 'parent', this);
-  this.nodes.unshift(node);
+  return this.nodes.unshift(node);
+};
+
+/**
+ * Pop a node from `node.nodes`.
+ *
+ * ```js
+ * var node = new Node({type: 'foo'});
+ * node.push(new Node({type: 'a'}));
+ * node.push(new Node({type: 'b'}));
+ * node.push(new Node({type: 'c'}));
+ * node.push(new Node({type: 'd'}));
+ * console.log(node.nodes.length);
+ * //=> 4
+ * node.pop();
+ * console.log(node.nodes.length);
+ * //=> 3
+ * ```
+ * @return {Number} Returns the popped `node`
+ * @api public
+ */
+
+Node.prototype.pop = function() {
+  return this.nodes && this.nodes.pop();
+};
+
+/**
+ * Shift a node from `node.nodes`.
+ *
+ * ```js
+ * var node = new Node({type: 'foo'});
+ * node.push(new Node({type: 'a'}));
+ * node.push(new Node({type: 'b'}));
+ * node.push(new Node({type: 'c'}));
+ * node.push(new Node({type: 'd'}));
+ * console.log(node.nodes.length);
+ * //=> 4
+ * node.shift();
+ * console.log(node.nodes.length);
+ * //=> 3
+ * ```
+ * @return {Object} Returns the shifted `node`
+ * @api public
+ */
+
+Node.prototype.shift = function() {
+  return this.nodes && this.nodes.shift();
+};
+
+/**
+ * Remove `node` from `node.nodes`.
+ *
+ * ```js
+ * node.remove(childNode);
+ * ```
+ * @param {Object} `node`
+ * @return {Object} Returns the removed node.
+ * @api public
+ */
+
+Node.prototype.remove = function(node) {
+  assert(Node.isNode(node), 'expected node to be an instance of Node');
+  this.nodes = this.nodes || [];
+  var idx = node.index;
+  if (idx !== -1) {
+    return this.nodes.splice(idx, 1);
+  }
+  return null;
 };
 
 /**
@@ -109,19 +218,18 @@ Node.prototype.unshiftNode = function(node) {
  * If `type` is a number, the child node at that index is returned.
  *
  * ```js
- * var child = node.getNode(1); //<= index of the node to get
- * var child = node.getNode('foo');
- * var child = node.getNode(/^(foo|bar)$/);
- * var child = node.getNode(['foo', 'bar']);
+ * var child = node.find(1); //<= index of the node to get
+ * var child = node.find('foo');
+ * var child = node.find(/^(foo|bar)$/);
+ * var child = node.find(['foo', 'bar']);
  * ```
- * @name .getNode
  * @param {String} `type`
  * @return {Object} Returns a child node or undefined.
  * @api public
  */
 
-Node.prototype.getNode = function(type) {
-  return utils.su.getNode(this.nodes, type);
+Node.prototype.find = function(type) {
+  return utils.findNode(this.nodes, type);
 };
 
 /**
@@ -133,14 +241,13 @@ Node.prototype.getNode = function(type) {
  * cosole.log(node.isType(/^(foo|bar)$/));  // true
  * cosole.log(node.isType(['foo', 'bar'])); // true
  * ```
- * @name .isType
  * @param {String} `type`
  * @return {Boolean}
  * @api public
  */
 
 Node.prototype.isType = function(type) {
-  return utils.su.isType(this, type);
+  return utils.isType(this, type);
 };
 
 /**
@@ -149,20 +256,19 @@ Node.prototype.isType = function(type) {
  * ```js
  * var foo = new Node({type: 'foo'});
  * var bar = new Node({type: 'bar'});
- * foo.pushNode(bar);
+ * foo.push(bar);
  *
  * cosole.log(foo.hasType('qux'));          // false
  * cosole.log(foo.hasType(/^(qux|bar)$/));  // true
  * cosole.log(foo.hasType(['qux', 'bar'])); // true
  * ```
- * @name .hasType
  * @param {String} `type`
  * @return {Boolean}
  * @api public
  */
 
 Node.prototype.hasType = function(type) {
-  return utils.su.hasType(this, type);
+  return utils.hasType(this, type);
 };
 
 /**
@@ -172,71 +278,22 @@ Node.prototype.hasType = function(type) {
  * var foo = new Node({type: 'foo'});
  * var bar = new Node({type: 'bar'});
  * var baz = new Node({type: 'baz'});
- * foo.pushNode(bar);
- * foo.pushNode(baz);
+ * foo.push(bar);
+ * foo.push(baz);
  *
  * console.log(bar.siblings.length) // 2
  * console.log(baz.siblings.length) // 2
  * ```
- * @name .siblings
  * @return {Array}
  * @api public
  */
 
 Object.defineProperty(Node.prototype, 'siblings', {
+  set: function() {
+    throw new Error('node.siblings is a getter and cannot be defined');
+  },
   get: function() {
     return this.parent ? this.parent.nodes : null;
-  }
-});
-
-/**
- * Get the previous node from the siblings array or `null`.
- *
- * ```js
- * var foo = new Node({type: 'foo'});
- * var bar = new Node({type: 'bar'});
- * var baz = new Node({type: 'baz'});
- * foo.pushNode(bar);
- * foo.pushNode(baz);
- *
- * console.log(baz.prev.type) // 'bar'
- * ```
- * @name .prev
- * @return {Object}
- * @api public
- */
-
-Object.defineProperty(Node.prototype, 'prev', {
-  get: function() {
-    return this.parent && this.siblings
-      ? this.siblings[this.index - 1] || this.parent.prev
-      : null;
-  }
-});
-
-/**
- * Get the siblings array, or `null` if it doesn't exist.
- *
- * ```js
- * var foo = new Node({type: 'foo'});
- * var bar = new Node({type: 'bar'});
- * var baz = new Node({type: 'baz'});
- * foo.pushNode(bar);
- * foo.pushNode(baz);
- *
- * console.log(bar.siblings.length) // 2
- * console.log(baz.siblings.length) // 2
- * ```
- * @name .next
- * @return {Object}
- * @api public
- */
-
-Object.defineProperty(Node.prototype, 'next', {
-  get: function() {
-    return this.parent && this.siblings
-      ? this.siblings[this.index + 1] || this.parent.next
-      : null;
   }
 });
 
@@ -249,22 +306,88 @@ Object.defineProperty(Node.prototype, 'next', {
  * var bar = new Node({type: 'bar'});
  * var baz = new Node({type: 'baz'});
  * var qux = new Node({type: 'qux'});
- * foo.pushNode(bar);
- * foo.pushNode(baz);
- * foo.unshiftNode(qux);
+ * foo.push(bar);
+ * foo.push(baz);
+ * foo.unshift(qux);
  *
  * console.log(bar.index) // 1
  * console.log(baz.index) // 2
  * console.log(qux.index) // 0
  * ```
- * @name .index
  * @return {Number}
  * @api public
  */
 
 Object.defineProperty(Node.prototype, 'index', {
+  set: function(index) {
+    define(this, 'idx', index);
+  },
   get: function() {
-    return this.siblings ? this.siblings.indexOf(this) : -1;
+    if (!Array.isArray(this.siblings)) {
+      return -1;
+    }
+    var tok = this.siblings[this.idx];
+    if (tok !== this) {
+      this.idx = this.siblings.indexOf(this);
+    }
+    return this.idx;
+  }
+});
+
+/**
+ * Get the previous node from the siblings array or `null`.
+ *
+ * ```js
+ * var foo = new Node({type: 'foo'});
+ * var bar = new Node({type: 'bar'});
+ * var baz = new Node({type: 'baz'});
+ * foo.push(bar);
+ * foo.push(baz);
+ *
+ * console.log(baz.prev.type) // 'bar'
+ * ```
+ * @return {Object}
+ * @api public
+ */
+
+Object.defineProperty(Node.prototype, 'prev', {
+  set: function() {
+    throw new Error('node.prev is a getter and cannot be defined');
+  },
+  get: function() {
+    if (Array.isArray(this.siblings)) {
+      return this.siblings[this.index - 1] || this.parent.prev;
+    }
+    return null;
+  }
+});
+
+/**
+ * Get the siblings array, or `null` if it doesn't exist.
+ *
+ * ```js
+ * var foo = new Node({type: 'foo'});
+ * var bar = new Node({type: 'bar'});
+ * var baz = new Node({type: 'baz'});
+ * foo.push(bar);
+ * foo.push(baz);
+ *
+ * console.log(bar.siblings.length) // 2
+ * console.log(baz.siblings.length) // 2
+ * ```
+ * @return {Object}
+ * @api public
+ */
+
+Object.defineProperty(Node.prototype, 'next', {
+  set: function() {
+    throw new Error('node.next is a getter and cannot be defined');
+  },
+  get: function() {
+    if (Array.isArray(this.siblings)) {
+      return this.siblings[this.index + 1] || this.parent.next;
+    }
+    return null;
   }
 });
 
@@ -276,20 +399,19 @@ Object.defineProperty(Node.prototype, 'index', {
  * var bar = new Node({type: 'bar'});
  * var baz = new Node({type: 'baz'});
  * var qux = new Node({type: 'qux'});
- * foo.pushNode(bar);
- * foo.pushNode(baz);
- * foo.pushNode(qux);
+ * foo.push(bar);
+ * foo.push(baz);
+ * foo.push(qux);
  *
  * console.log(foo.first.type) // 'bar'
  * ```
- * @name .first
  * @return {Object} The first node, or undefiend
  * @api public
  */
 
 Object.defineProperty(Node.prototype, 'first', {
   get: function() {
-    return utils.su.arrayify(this.nodes)[0];
+    return this.nodes ? this.nodes[0] : null;
   }
 });
 
@@ -301,19 +423,18 @@ Object.defineProperty(Node.prototype, 'first', {
  * var bar = new Node({type: 'bar'});
  * var baz = new Node({type: 'baz'});
  * var qux = new Node({type: 'qux'});
- * foo.pushNode(bar);
- * foo.pushNode(baz);
- * foo.pushNode(qux);
+ * foo.push(bar);
+ * foo.push(baz);
+ * foo.push(qux);
  *
  * console.log(foo.last.type) // 'qux'
  * ```
- * @name .last
  * @return {Object} The last node, or undefiend
  * @api public
  */
 
 Object.defineProperty(Node.prototype, 'last', {
   get: function() {
-    return utils.su.last(utils.su.arrayify(this.nodes));
+    return this.nodes ? utils.last(this.nodes) : null;
   }
 });
