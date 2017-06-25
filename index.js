@@ -1,6 +1,5 @@
 'use strict';
 
-var copy = require('object-copy');
 var isObject = require('isobject');
 var define = require('define-property');
 var utils = require('snapdragon-util');
@@ -32,11 +31,13 @@ function Node(val, type, parent) {
 
   if (typeof type !== 'string' && isObject(val)) {
     lazyKeys();
-    // copy properties from val to the node,
-    // excluding any own property names
-    copy(this, val, function(key) {
-      return ownNames.indexOf(key) === -1;
-    });
+    var keys = Object.keys(val);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      if (ownNames.indexOf(key) === -1) {
+        this[key] = val[key];
+      }
+    }
   } else {
     this.type = type;
     this.val = val;

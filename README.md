@@ -39,7 +39,7 @@ snapdragon.parser.set('foo', function() {
 
 ## API
 
-### [Node](index.js#L23)
+### [Node](index.js#L22)
 
 Create a new AST `Node` with the given `val` and `type`.
 
@@ -56,7 +56,7 @@ var node = new Node('*', 'Star');
 var node = new Node({type: 'star', val: '*'});
 ```
 
-### [.isNode](index.js#L60)
+### [.isNode](index.js#L61)
 
 Returns true if the given value is a node.
 
@@ -74,7 +74,7 @@ console.log(Node.isNode(node)); //=> true
 console.log(Node.isNode({})); //=> false
 ```
 
-### [.define](index.js#L79)
+### [.define](index.js#L80)
 
 Define a non-enumberable property on the node instance. Useful for adding properties that shouldn't be extended or visible during debugging.
 
@@ -91,7 +91,7 @@ var node = new Node();
 node.define('foo', 'something non-enumerable');
 ```
 
-### [.isEmpty](index.js#L99)
+### [.isEmpty](index.js#L100)
 
 Returns true if `node.val` is an empty string, or `node.nodes` does not contain any non-empty text nodes.
 
@@ -109,7 +109,7 @@ node.val = 'foo';
 node.isEmpty(); //=> false
 ```
 
-### [.push](index.js#L117)
+### [.push](index.js#L118)
 
 Given node `foo` and node `bar`, push node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
@@ -126,7 +126,7 @@ var bar = new Node({type: 'bar'});
 foo.push(bar);
 ```
 
-### [.unshift](index.js#L139)
+### [.unshift](index.js#L140)
 
 Given node `foo` and node `bar`, unshift node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
 
@@ -143,7 +143,7 @@ var bar = new Node({type: 'bar'});
 foo.unshift(bar);
 ```
 
-### [.pop](index.js#L166)
+### [.pop](index.js#L167)
 
 Pop a node from `node.nodes`.
 
@@ -164,7 +164,7 @@ console.log(node.nodes.length);
 //=> 3
 ```
 
-### [.shift](index.js#L189)
+### [.shift](index.js#L190)
 
 Shift a node from `node.nodes`.
 
@@ -185,7 +185,7 @@ console.log(node.nodes.length);
 //=> 3
 ```
 
-### [.remove](index.js#L204)
+### [.remove](index.js#L205)
 
 Remove `node` from `node.nodes`.
 
@@ -200,7 +200,7 @@ Remove `node` from `node.nodes`.
 node.remove(childNode);
 ```
 
-### [.find](index.js#L230)
+### [.find](index.js#L231)
 
 Get the first child node from `node.nodes` that matches the given `type`. If `type` is a number, the child node at that index is returned.
 
@@ -218,7 +218,7 @@ var child = node.find(/^(foo|bar)$/); //<= regex to match node.type
 var child = node.find(['foo', 'bar']); //<= array of node.type(s)
 ```
 
-### [.isType](index.js#L248)
+### [.isType](index.js#L249)
 
 Return true if the node is the given `type`.
 
@@ -236,7 +236,7 @@ cosole.log(node.isType(/^(foo|bar)$/));  // true
 cosole.log(node.isType(['foo', 'bar'])); // true
 ```
 
-### [.hasType](index.js#L269)
+### [.hasType](index.js#L270)
 
 Return true if the `node.nodes` has the given `type`.
 
