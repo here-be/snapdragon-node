@@ -2,10 +2,18 @@
 
 require('mocha');
 var assert = require('assert');
+var define = require('define-property');
 var Parser = require('snapdragon/lib/parser');
-var Node = require('..');
+var BaseNode = require('..');
 var parser;
 var ast;
+
+class Node extends BaseNode {
+  define(key, val) {
+    define(this, key, val);
+    return this;
+  }
+}
 
 describe('snapdragon-node', function() {
   beforeEach(function() {
@@ -106,9 +114,7 @@ describe('snapdragon-node', function() {
       assert(node.position.end.line);
       assert(node.position.end.column);
     });
-  });
 
-  describe('node', function() {
     it('should extend type and val onto a node', function() {
       var node = new Node({type: 'foo', val: 'bar'});
       assert.equal(node.type, 'foo');
@@ -123,6 +129,28 @@ describe('snapdragon-node', function() {
     it('should not extend existing getter properties onto a node', function() {
       var node = new Node({type: 'foo', val: 'bar', index: 11});
       assert.equal(node.index, -1);
+    });
+  });
+
+  describe('.clone', function() {
+    it.only('should deep clone a node', function() {
+      var brace = new Node({type: 'brace', foo: 'bar'});
+      var lbrace = new Node({type: 'lbrace', val: '{'});
+      var inner = new Node({type: 'inner', val: 'a,b,c'});
+      var rbrace = new Node({type: 'rbrace', val: '}'});
+      brace.push(lbrace);
+      brace.push(inner);
+      brace.push(rbrace);
+      var cloned = brace.clone();
+
+      assert(cloned !== brace);
+      assert.equal(cloned.nodes.length, 3);
+      assert.equal(brace.nodes.length, 3);
+      assert(cloned.nodes !== brace.nodes);
+      assert(cloned.nodes[0] !== brace.nodes[0]);
+      assert.deepEqual(cloned, brace);
+      assert.equal(cloned.foo, 'bar');
+      assert.equal(brace.foo, 'bar');
     });
   });
 

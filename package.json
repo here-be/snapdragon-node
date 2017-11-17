@@ -20,17 +20,18 @@
     "test": "mocha"
   },
   "dependencies": {
+    "clone-deep": "^2.0.1",
     "define-property": "^1.0.0",
-    "isobject": "^3.0.0",
-    "snapdragon-util": "^3.0.1"
+    "kind-of": "^6.0.0",
+    "snapdragon-util": "^4.0.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-eslint": "^4.0.0",
-    "gulp-format-md": "^0.1.12",
+    "gulp-format-md": "^1.0.0",
     "gulp-istanbul": "^1.1.2",
     "gulp-mocha": "^3.0.1",
-    "mocha": "^3.4.2",
+    "mocha": "3.5.2",
     "snapdragon": "^0.11.0"
   },
   "keywords": [
@@ -65,10 +66,6 @@
         "snapdragon-util"
       ]
     },
-    "reflinks": [
-      "verb",
-      "verb-generate-readme"
-    ],
     "lint": {
       "reflinks": true
     }
