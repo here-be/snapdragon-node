@@ -1,120 +1,38 @@
 'use strict';
 
-const clone = require('clone-deep');
 const typeOf = require('kind-of');
-const define = require('define-property');
-const utils = require('snapdragon-util');
+const isObject = val => typeOf(val) === 'object';
 let memo;
 
 /**
- * Create a new AST `Node` with the given `val` and `type`.
+ * Create a new AST `Node` with the given `value` and `type`.
  *
  * ```js
  * const node = new Node('*', 'Star');
- * const node = new Node({type: 'star', val: '*'});
+ * const node = new Node({type: 'star', value: '*'});
  * ```
  * @name Node
- * @param {String|Object} `val` Pass a matched substring, or an object to merge onto the node.
- * @param {String} `type` The node type to use when `val` is a string.
+ * @param {String|Object} `value` Pass a matched substring, or an object to merge onto the node.
+ * @param {String} `type` The node type to use when `value` is a string.
  * @return {Object} node instance
  * @api public
  */
 
 class Node {
-  constructor(val, type, parent) {
+  constructor(value, type, parent) {
     if (typeof type !== 'string') {
       parent = type || parent;
       type = null;
     }
 
-    define(this, 'isNode', true);
     define(this, 'parent', parent);
-    define(this, 'count', 0);
 
-    if (typeof type !== 'string' && typeOf(val) === 'object') {
-      define(this, 'token', clone(val, true));
-      assign(this, val);
+    if (typeof type !== 'string' && isObject(value)) {
+      Object.assign(this, value);
     } else {
       this.type = type;
-      this.val = val;
+      this.value = value;
     }
-  }
-
-  /**
-   * Returns true if the given value is a node.
-   *
-   * ```js
-   * const Node = require('snapdragon-node');
-   * const node = new Node({type: 'foo'});
-   * console.log(Node.isNode(node)); //=> true
-   * console.log(Node.isNode({})); //=> false
-   * ```
-   * @param {Object} `node`
-   * @returns {Boolean}
-   * @api public
-   */
-
-  static isNode(node) {
-    return utils.isNode(node);
-  }
-
-  /**
-   * Deep clone the node.
-   *
-   * ```js
-   * const Node = require('snapdragon-node');
-   * const node = new Node({type: 'foo'});
-   * const newNode = node.clone();
-   * console.log(node === newNode); //=> false
-   * console.log(newNode.type); //=> 'foo'
-   * ```
-   * @param {Object} `node`
-   * @returns {Boolean}
-   * @api public
-   */
-
-  clone() {
-    return new this.constructor(clone(this, true));
-  }
-
-  /**
-   * Define a non-enumberable property on the node instance.
-   * Useful for adding properties that shouldn't be extended
-   * or visible during debugging.
-   *
-   * ```js
-   * const node = new Node();
-   * node.define('foo', 'something non-enumerable');
-   * ```
-   * @param {String} `name`
-   * @param {any} `val`
-   * @return {Object} returns the node instance
-   * @api public
-   */
-
-  define(name, val) {
-    console.warn('node.define is deprecated, see the snapdragon changelog');
-    define(this, name, val);
-    return this;
-  }
-
-  /**
-   * Returns true if `node.val` is an empty string, or `node.nodes` does
-   * not contain any non-empty text nodes.
-   *
-   * ```js
-   * const node = new Node({type: 'text'});
-   * node.isEmpty(); //=> true
-   * node.val = 'foo';
-   * node.isEmpty(); //=> false
-   * ```
-   * @param {Function} `fn` (optional) Filter function that is called on `node` and/or child nodes. `isEmpty` will return false immediately when the filter function returns false on any nodes.
-   * @return {Boolean}
-   * @api public
-   */
-
-  isEmpty(fn) {
-    return utils.isEmpty(this, fn);
   }
 
   /**
@@ -132,11 +50,10 @@ class Node {
    */
 
   push(node) {
-    expect(Node.isNode(node), 'node', 'Node');
+    expect(Node.isNode(node), 'node');
     define(node, 'parent', this);
 
     this.nodes = this.nodes || [];
-    this.count++;
     return this.nodes.push(node);
   }
 
@@ -155,11 +72,10 @@ class Node {
    */
 
   unshift(node) {
-    expect(Node.isNode(node), 'node', 'Node');
+    expect(Node.isNode(node), 'node');
     define(node, 'parent', this);
 
     this.nodes = this.nodes || [];
-    this.count++;
     return this.nodes.unshift(node);
   }
 
@@ -183,7 +99,6 @@ class Node {
    */
 
   pop() {
-    this.count--;
     return this.nodes && this.nodes.pop();
   }
 
@@ -207,7 +122,6 @@ class Node {
    */
 
   shift() {
-    this.count--;
     return this.nodes && this.nodes.shift();
   }
 
@@ -223,8 +137,8 @@ class Node {
    */
 
   remove(node) {
-    expect(Node.isNode(node), 'node', 'Node');
-    this.nodes = this.nodes || [];
+    expect(Node.isNode(node), 'node');
+    if (!this.nodes) return null;
     const idx = node.index;
     if (idx !== -1) {
       node.index = -1;
@@ -249,7 +163,14 @@ class Node {
    */
 
   find(type) {
-    return utils.findNode(this.nodes, type);
+    if (!Array.isArray(this.nodes)) return null;
+    if (this.nodes.length === 0) return null;
+    if (typeof type === 'number') return this.nodes[type];
+    for (const node of this.nodes) {
+      if (isType(node, type)) {
+        return node;
+      }
+    }
   }
 
   /**
@@ -267,7 +188,7 @@ class Node {
    */
 
   isType(type) {
-    return utils.isType(this, type);
+    return isType(this, type);
   }
 
   /**
@@ -288,7 +209,14 @@ class Node {
    */
 
   hasType(type) {
-    return utils.hasType(this, type);
+    if (!Array.isArray(this.nodes)) return false;
+    if (this.nodes.length === 0) return false;
+    for (const node of this.nodes) {
+      if (isType(node, type)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -308,7 +236,7 @@ class Node {
    * @api public
    */
 
-  set siblings(val) {
+  set siblings(value) {
     throw new Error('node.siblings is a getter and cannot be defined');
   }
   get siblings() {
@@ -366,7 +294,7 @@ class Node {
    * @api public
    */
 
-  set prev(val) {
+  set prev(value) {
     throw new Error('node.prev is a getter and cannot be defined');
   }
   get prev() {
@@ -393,7 +321,7 @@ class Node {
    * @api public
    */
 
-  set next(val) {
+  set next(value) {
     throw new Error('node.next is a getter and cannot be defined');
   }
   get next() {
@@ -444,7 +372,7 @@ class Node {
    */
 
   get last() {
-    return this.nodes ? utils.last(this.nodes) : null;
+    return this.nodes ? last(this.nodes) : null;
   }
 
   /**
@@ -467,6 +395,28 @@ class Node {
 
   get scope() {
     return !this.isScope ? this.parent : this;
+  }
+
+  get isNode() {
+    return true;
+  }
+
+  /**
+   * Returns true if the given value is a node.
+   *
+   * ```js
+   * const Node = require('snapdragon-node');
+   * const node = new Node({type: 'foo'});
+   * console.log(Node.isNode(node)); //=> true
+   * console.log(Node.isNode({})); //=> false
+   * ```
+   * @param {Object} `node`
+   * @returns {Boolean}
+   * @api public
+   */
+
+  static isNode(node) {
+    return isObject(node) && node.isNode === true;
   }
 }
 
@@ -497,14 +447,46 @@ function assign(node, token) {
 }
 
 /**
- * Simplified assertion. Throws an error is `val` is not true.
+ * Simplified assertion. Throws an error is `value` is not true.
  */
 
-function assert(val, message) {
-  if (val !== true) throw new Error(message);
+function assert(value, message) {
+  if (value !== true) throw new Error(message);
 }
-function expect(val, name, expected) {
-  assert(val, 'expected ' + name + ' to be an instance of ' + expected);
+function expect(value, name) {
+  assert(value, 'expected ' + name + ' to be an instance of Node');
+}
+
+function last(arr, n = 1) {
+  return Array.isArray(arr) ? arr[arr.length - n] : null;
+}
+
+function isType(node, type) {
+  switch (typeOf(type)) {
+    case 'string':
+      return node.type === type;
+    case 'regexp':
+      return type.test(node.type);
+    case 'array':
+      for (const key of type) {
+        if (node.isType(node, key)) {
+          return true;
+        }
+      }
+      return false;
+    default: {
+      throw new TypeError('expected "type" to be an array, string or regexp');
+    }
+  }
+}
+
+function define(obj, key, value) {
+  Object.defineProperty(obj, key, {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: value
+  });
 }
 
 /**

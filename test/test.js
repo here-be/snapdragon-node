@@ -9,8 +9,8 @@ var parser;
 var ast;
 
 class Node extends BaseNode {
-  define(key, val) {
-    define(this, key, val);
+  define(key, value) {
+    define(this, key, value);
     return this;
   }
 }
@@ -46,8 +46,8 @@ describe('snapdragon-node', function() {
     });
 
     it('should create a new Node with the given object', function() {
-      var node = new Node({val: '*', type: 'star'});
-      assert.equal(node.val, '*');
+      var node = new Node({value: '*', type: 'star'});
+      assert.equal(node.value, '*');
       assert.equal(node.type, 'star');
     });
 
@@ -65,11 +65,11 @@ describe('snapdragon-node', function() {
       assert(node.position.end.column);
     });
 
-    it('should create a new Node with the given position and val', function() {
+    it('should create a new Node with the given position and value', function() {
       var pos = parser.position();
       var node = pos(new Node('*'));
 
-      assert.equal(node.val, '*');
+      assert.equal(node.value, '*');
 
       assert(node.position);
       assert(node.position.start);
@@ -81,11 +81,11 @@ describe('snapdragon-node', function() {
       assert(node.position.end.column);
     });
 
-    it('should create a new Node with the given position, type, and val', function() {
+    it('should create a new Node with the given position, type, and value', function() {
       var pos = parser.position();
       var node = pos(new Node('*', 'star'));
 
-      assert.equal(node.val, '*');
+      assert.equal(node.value, '*');
       assert.equal(node.type, 'star');
 
       assert(node.position);
@@ -100,9 +100,9 @@ describe('snapdragon-node', function() {
 
     it('should create a new Node with the given position and object', function() {
       var pos = parser.position();
-      var node = pos(new Node({val: '*', type: 'star'}));
+      var node = pos(new Node({value: '*', type: 'star'}));
 
-      assert.equal(node.val, '*');
+      assert.equal(node.value, '*');
       assert.equal(node.type, 'star');
 
       assert(node.position);
@@ -115,42 +115,20 @@ describe('snapdragon-node', function() {
       assert(node.position.end.column);
     });
 
-    it('should extend type and val onto a node', function() {
-      var node = new Node({type: 'foo', val: 'bar'});
+    it('should extend type and value onto a node', function() {
+      var node = new Node({type: 'foo', value: 'bar'});
       assert.equal(node.type, 'foo');
-      assert.equal(node.val, 'bar');
+      assert.equal(node.value, 'bar');
     });
 
     it('should extend arbitrary properties onto a node', function() {
-      var node = new Node({type: 'foo', val: 'bar', baz: 'qux'});
+      var node = new Node({type: 'foo', value: 'bar', baz: 'qux'});
       assert.equal(node.baz, 'qux');
     });
 
     it('should not extend existing getter properties onto a node', function() {
-      var node = new Node({type: 'foo', val: 'bar', index: 11});
+      var node = new Node({type: 'foo', value: 'bar', index: 11});
       assert.equal(node.index, -1);
-    });
-  });
-
-  describe('.clone', function() {
-    it.only('should deep clone a node', function() {
-      var brace = new Node({type: 'brace', foo: 'bar'});
-      var lbrace = new Node({type: 'lbrace', val: '{'});
-      var inner = new Node({type: 'inner', val: 'a,b,c'});
-      var rbrace = new Node({type: 'rbrace', val: '}'});
-      brace.push(lbrace);
-      brace.push(inner);
-      brace.push(rbrace);
-      var cloned = brace.clone();
-
-      assert(cloned !== brace);
-      assert.equal(cloned.nodes.length, 3);
-      assert.equal(brace.nodes.length, 3);
-      assert(cloned.nodes !== brace.nodes);
-      assert(cloned.nodes[0] !== brace.nodes[0]);
-      assert.deepEqual(cloned, brace);
-      assert.equal(cloned.foo, 'bar');
-      assert.equal(brace.foo, 'bar');
     });
   });
 
@@ -250,37 +228,6 @@ describe('snapdragon-node', function() {
     });
   });
 
-  describe('.isEmpty', function() {
-    it('should return true when node.nodes does not exist', function() {
-      var node = new Node({type: 'foo'});
-      assert(node.isEmpty());
-    });
-
-    it('should return true when node.val is an empty string', function() {
-      var node = new Node({type: 'text', val: ''});
-      assert(node.isEmpty());
-    });
-
-    it('should return true when node.val is undefined', function() {
-      var node = new Node({type: 'text'});
-      assert(node.isEmpty());
-    });
-
-    it('should return false when node.nodes is not empty', function() {
-      var node = new Node({type: 'foo'});
-      node.push(new Node({type: 'text', val: 'foo'}));
-      assert.equal(node.isEmpty(), false);
-    });
-
-    it('should return true when node.nodes is empty', function() {
-      var node = new Node({type: 'foo'});
-      node.push(new Node({type: 'text', val: 'foo'}));
-      assert.equal(node.isEmpty(), false);
-      node.pop();
-      assert.equal(node.isEmpty(), true);
-    });
-  });
-
   describe('.push', function() {
     it('should push nodes onto node.nodes', function() {
       var node = new Node({type: 'foo'});
@@ -341,16 +288,16 @@ describe('snapdragon-node', function() {
     it('should not blow up when no nodes exist', function() {
       var node = new Node({type: 'foo'});
       node.shift();
-      assert(node.isEmpty());
+      assert(!node.nodes);
     });
   });
 
   describe('.remove', function() {
     it('should not do anything when a node does not exist', function() {
       var node = new Node({type: 'foo'});
-      assert(node.isEmpty());
+      assert(!node.nodes);
       node.remove(new Node({type: 'a'}))
-      assert(node.isEmpty());
+      assert(!node.nodes);
     });
 
     it('should remove the given node from node.nodes', function() {
