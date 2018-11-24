@@ -1,6 +1,8 @@
-# snapdragon-node [![NPM version](https://img.shields.io/npm/v/snapdragon-node.svg?style=flat)](https://www.npmjs.com/package/snapdragon-node) [![NPM monthly downloads](https://img.shields.io/npm/dm/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![NPM total downloads](https://img.shields.io/npm/dt/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![Linux Build Status](https://img.shields.io/travis/jonschlinkert/snapdragon-node.svg?style=flat&label=Travis)](https://travis-ci.org/jonschlinkert/snapdragon-node)
+# snapdragon-node [![NPM version](https://img.shields.io/npm/v/snapdragon-node.svg?style=flat)](https://www.npmjs.com/package/snapdragon-node) [![NPM monthly downloads](https://img.shields.io/npm/dm/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![NPM total downloads](https://img.shields.io/npm/dt/snapdragon-node.svg?style=flat)](https://npmjs.org/package/snapdragon-node) [![Linux Build Status](https://img.shields.io/travis/here-be/snapdragon-node.svg?style=flat&label=Travis)](https://travis-ci.org/here-be/snapdragon-node)
 
-> Snapdragon utility for creating a new AST node in custom code, such as plugins.
+> Class for creating AST nodes.
+
+Please consider following this project's author, [Jon Schlinkert](https://github.com/jonschlinkert), and consider starring the project to show your :heart: and support.
 
 ## Install
 
@@ -12,123 +14,124 @@ $ npm install --save snapdragon-node
 
 ## Usage
 
-With [snapdragon](https://github.com/jonschlinkert/snapdragon) v0.9.0 and higher you can use `this.node()` to create a new `Node`, whenever it makes sense.
-
 ```js
-var Node = require('snapdragon-node');
-var Snapdragon = require('snapdragon');
-var snapdragon = new Snapdragon();
-
-// example usage inside a parser visitor function
-snapdragon.parser.set('foo', function() {
-  // get the current "start" position
-  var pos = this.position();
-
-  // returns the match if regex matches the substring 
-  // at the current position on `parser.input`
-  var match = this.match(/foo/);
-  if (match) {
-    // call "pos" on the node, to set the start and end 
-    // positions, and return the node to push it onto the AST
-    // (snapdragon will push the node onto the correct
-    // nodes array, based on the stack)
-    return pos(new Node({type: 'bar', val: match[0]}));
-  }
-});
+const Node = require('snapdragon-node');
+// either pass on object with "type" and (optional) "val"
+const node1 = new Node({type: 'star', val: '*'});
+// or pass "val" (first) and "type" (second) as string
+const node2 = new Node('*', 'star');
+// both result in => Node { type: 'star', val: '*' }
 ```
 
-## API
+## Snapdragon usage
 
-### [Node](index.js#L22)
+With [snapdragon](https://github.com/here-be/snapdragon) v0.9.0 and higher, it's recommended that you use `this.node()` to create a new `Node` inside parser handlers (instead of doing `new Node()`).
 
-Create a new AST `Node` with the given `val` and `type`.
+### Snapdragon ^1.0.0
+
+Example usage inside a [snapdragon](https://github.com/here-be/snapdragon) parser handler function.
+
+```js
+const Node = require('snapdragon-node');
+const Token = require('snapdragon-token');
+
+// create a new AST node
+const node = new Node({ type: 'star', value: '*' });
+
+// convert a Lexer Token into an AST Node
+const token = new Token({ type: 'star', value: '*' });
+const node = new Node(token);
+```
+
+## Node objects
+
+AST Nodes are represented as `Node` objects that implement the following interface:
+
+```js
+interface Node {
+  type: string;
+  value: string | undefined
+  nodes: array | undefined
+}
+```
+
+* `type` **{string}** - A string representing the node variant type. This property is often used for classifying the purpose or nature of the node, so that parsers or compilers can determine what to do with it.
+* `value` **{string|undefined}** (optional) - In general, value should only be a string when `node.nodes` is undefined. This is not reinforced, but is considered good practice. Use a different property name to store arbitrary strings on the node when `node.nodes` is an array.
+* `nodes` **{array|undefined}** (optional) - array of child nodes
+
+A number of useful methods and non-enumerable properties are also exposed for adding, finding and removing child nodes, etc.
+
+Continue reading the API documentation for more details.
+
+## Node API
+
+### [Node](index.js#L20)
+
+Create a new AST `Node` with the given `type` and `value`, or an object to initialize with.
 
 **Params**
 
-* `val` **{String|Object}**: Pass a matched substring, or an object to merge onto the node.
-* `type` **{String}**: The node type to use when `val` is a string.
+* `type` **{object|string}**: Either an object to initialize with, or a string to be used as the `node.type`.
+* `value` **{string|boolean}**: If the first argument is a string, the second argument may be a string value to set on `node.value`.
+* `clone` **{boolean}**: When an object is passed as the first argument, pass true as the last argument to deep clone values before assigning them to the new node.
 * `returns` **{Object}**: node instance
 
 **Example**
 
 ```js
-var node = new Node('*', 'Star');
-var node = new Node({type: 'star', val: '*'});
+console.log(new Node({ type: 'star', value: '*' }));
+console.log(new Node('star', '*'));
+// both result in => Node { type: 'star', value: '*' }
 ```
 
-### [.isNode](index.js#L61)
+### [.clone](index.js#L50)
 
-Returns true if the given value is a node.
+Return a clone of the node. Values that are arrays or plain objects are deeply cloned.
+
+* `returns` **{Object}**: returns a clone of the node
+
+**Example**
+
+```js
+const node = new Node({type: 'star', value: '*'});
+consle.log(node.clone() !== node);
+//=> true
+```
+
+### [.stringify](index.js#L68)
+
+Return a string created from `node.value` and/or recursively visiting over `node.nodes`.
+
+* `returns` **{String}**
+
+**Example**
+
+```js
+const node = new Node({type: 'star', value: '*'});
+consle.log(node.stringify());
+//=> '*'
+```
+
+### [.push](index.js#L88)
+
+Push a child node onto the `node.nodes` array.
 
 **Params**
 
 * `node` **{Object}**
-* `returns` **{Boolean}**
+* `returns` **{Number}**: Returns the length of `node.nodes`, like `Array.push`
 
 **Example**
 
 ```js
-var Node = require('snapdragon-node');
-var node = new Node({type: 'foo'});
-console.log(Node.isNode(node)); //=> true
-console.log(Node.isNode({})); //=> false
-```
-
-### [.define](index.js#L80)
-
-Define a non-enumberable property on the node instance. Useful for adding properties that shouldn't be extended or visible during debugging.
-
-**Params**
-
-* `name` **{String}**
-* `val` **{any}**
-* `returns` **{Object}**: returns the node instance
-
-**Example**
-
-```js
-var node = new Node();
-node.define('foo', 'something non-enumerable');
-```
-
-### [.isEmpty](index.js#L100)
-
-Returns true if `node.val` is an empty string, or `node.nodes` does not contain any non-empty text nodes.
-
-**Params**
-
-* `fn` **{Function}**: (optional) Filter function that is called on `node` and/or child nodes. `isEmpty` will return false immediately when the filter function returns false on any nodes.
-* `returns` **{Boolean}**
-
-**Example**
-
-```js
-var node = new Node({type: 'text'});
-node.isEmpty(); //=> true
-node.val = 'foo';
-node.isEmpty(); //=> false
-```
-
-### [.push](index.js#L118)
-
-Given node `foo` and node `bar`, push node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
-
-**Params**
-
-* `node` **{Object}**
-* `returns` **{Number}**: Returns the length of `node.nodes`
-
-**Example**
-
-```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
 foo.push(bar);
 ```
 
-### [.unshift](index.js#L140)
+### [.unshift](index.js#L117)
 
-Given node `foo` and node `bar`, unshift node `bar` onto `foo.nodes`, and set `foo` as `bar.parent`.
+Unshift a child node onto `node.nodes`, and set `node` as the parent on `child.parent`.
 
 **Params**
 
@@ -138,12 +141,12 @@ Given node `foo` and node `bar`, unshift node `bar` onto `foo.nodes`, and set `f
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
 foo.unshift(bar);
 ```
 
-### [.pop](index.js#L167)
+### [.pop](index.js#L151)
 
 Pop a node from `node.nodes`.
 
@@ -152,7 +155,7 @@ Pop a node from `node.nodes`.
 **Example**
 
 ```js
-var node = new Node({type: 'foo'});
+const node = new Node({type: 'foo'});
 node.push(new Node({type: 'a'}));
 node.push(new Node({type: 'b'}));
 node.push(new Node({type: 'c'}));
@@ -164,7 +167,7 @@ console.log(node.nodes.length);
 //=> 3
 ```
 
-### [.shift](index.js#L190)
+### [.shift](index.js#L178)
 
 Shift a node from `node.nodes`.
 
@@ -173,7 +176,7 @@ Shift a node from `node.nodes`.
 **Example**
 
 ```js
-var node = new Node({type: 'foo'});
+const node = new Node({type: 'foo'});
 node.push(new Node({type: 'a'}));
 node.push(new Node({type: 'b'}));
 node.push(new Node({type: 'c'}));
@@ -185,7 +188,7 @@ console.log(node.nodes.length);
 //=> 3
 ```
 
-### [.remove](index.js#L205)
+### [.remove](index.js#L197)
 
 Remove `node` from `node.nodes`.
 
@@ -200,7 +203,7 @@ Remove `node` from `node.nodes`.
 node.remove(childNode);
 ```
 
-### [.find](index.js#L231)
+### [.find](index.js#L228)
 
 Get the first child node from `node.nodes` that matches the given `type`. If `type` is a number, the child node at that index is returned.
 
@@ -212,15 +215,15 @@ Get the first child node from `node.nodes` that matches the given `type`. If `ty
 **Example**
 
 ```js
-var child = node.find(1); //<= index of the node to get
-var child = node.find('foo'); //<= node.type of a child node
-var child = node.find(/^(foo|bar)$/); //<= regex to match node.type
-var child = node.find(['foo', 'bar']); //<= array of node.type(s)
+const child = node.find(1); //<= index of the node to get
+const child = node.find('foo'); //<= node.type of a child node
+const child = node.find(/^(foo|bar)$/); //<= regex to match node.type
+const child = node.find(['foo', 'bar']); //<= array of node.type(s)
 ```
 
-### [.isType](index.js#L249)
+### [.has](index.js#L259)
 
-Return true if the node is the given `type`.
+Returns true if `node.nodes` array contains the given `node`.
 
 **Params**
 
@@ -230,13 +233,14 @@ Return true if the node is the given `type`.
 **Example**
 
 ```js
-var node = new Node({type: 'bar'});
-cosole.log(node.isType('foo'));          // false
-cosole.log(node.isType(/^(foo|bar)$/));  // true
-cosole.log(node.isType(['foo', 'bar'])); // true
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+cosole.log(foo.has(bar)); // false
+foo.push(bar);
+cosole.log(foo.has(bar)); // true
 ```
 
-### [.hasType](index.js#L270)
+### [.hasType](index.js#L284)
 
 Return true if the `node.nodes` has the given `type`.
 
@@ -248,8 +252,8 @@ Return true if the `node.nodes` has the given `type`.
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
 foo.push(bar);
 
 cosole.log(foo.hasType('qux'));          // false
@@ -257,14 +261,72 @@ cosole.log(foo.hasType(/^(qux|bar)$/));  // true
 cosole.log(foo.hasType(['qux', 'bar'])); // true
 ```
 
+### [.isType](index.js#L303)
+
+Return true if the node is the given `type`.
+
+**Params**
+
+* `type` **{String}**
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+const node = new Node({type: 'bar'});
+cosole.log(node.isType('foo'));          // false
+cosole.log(node.isType(/^(foo|bar)$/));  // true
+cosole.log(node.isType(['foo', 'bar'])); // true
+```
+
+### [.isEmpty](index.js#L323)
+
+Returns true if `node.value` is an empty string, or `node.nodes` does not contain any non-empty text nodes.
+
+**Params**
+
+* `fn` **{Function}**: (optional) Filter function that is called on `node` and/or child nodes. `isEmpty` will return false immediately when the filter function returns false on any nodes.
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+const node = new Node({type: 'text'});
+node.isEmpty(); //=> true
+node.value = 'foo';
+node.isEmpty(); //=> false
+```
+
+### [.isInside](index.js#L342)
+
+Returns true if the node has an ancestor node of the given `type`
+
+**Params**
+
+* `type` **{String}**
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+const box = new Node({type: 'box'});
+const marble = new Node({type: 'marble'});
+box.push(marble);
+marble.isInside('box'); //=> true
+```
+
+### [.siblings](index.js#L365)
+
+Get the siblings array, or `null` if it doesn't exist.
+
 * `returns` **{Array}**
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+const baz = new Node({type: 'baz'});
 foo.push(bar);
 foo.push(baz);
 
@@ -272,15 +334,19 @@ console.log(bar.siblings.length) // 2
 console.log(baz.siblings.length) // 2
 ```
 
+### [.index](index.js#L393)
+
+Calculate the node's current index on `node.parent.nodes`, or `-1` if the node does not have a parent, or is not on `node.parent.nodes`.
+
 * `returns` **{Number}**
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-var qux = new Node({type: 'qux'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+const baz = new Node({type: 'baz'});
+const qux = new Node({type: 'qux'});
 foo.push(bar);
 foo.push(baz);
 foo.unshift(qux);
@@ -290,44 +356,58 @@ console.log(baz.index) // 2
 console.log(qux.index) // 0
 ```
 
+### [.prev](index.js#L424)
+
+Get the previous node from the [siblings](#siblings) array or `null`.
+
 * `returns` **{Object}**
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+const baz = new Node({type: 'baz'});
 foo.push(bar);
 foo.push(baz);
 
 console.log(baz.prev.type) // 'bar'
 ```
 
+### [.next](index.js#L453)
+
+Get the next element from the [siblings](#siblings) array, or `null` if a next node does not exist.
+
 * `returns` **{Object}**
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-foo.push(bar);
-foo.push(baz);
+const parent = new Node({type: 'root'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+const baz = new Node({type: 'baz'});
+parent.push(foo);
+parent.push(bar);
+parent.push(baz);
 
-console.log(bar.siblings.length) // 2
-console.log(baz.siblings.length) // 2
+console.log(foo.next.type) // 'bar'
+console.log(bar.next.type) // 'baz'
 ```
+
+### [.first](index.js#L480)
+
+Get the first child node from `node.nodes`.
 
 * `returns` **{Object}**: The first node, or undefiend
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-var qux = new Node({type: 'qux'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+const baz = new Node({type: 'baz'});
+const qux = new Node({type: 'qux'});
 foo.push(bar);
 foo.push(baz);
 foo.push(qux);
@@ -335,15 +415,19 @@ foo.push(qux);
 console.log(foo.first.type) // 'bar'
 ```
 
+### [.last](index.js#L504)
+
+Get the last child node from `node.nodes`.
+
 * `returns` **{Object}**: The last node, or undefiend
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-var qux = new Node({type: 'qux'});
+const foo = new Node({type: 'foo'});
+const bar = new Node({type: 'bar'});
+const baz = new Node({type: 'baz'});
+const qux = new Node({type: 'qux'});
 foo.push(bar);
 foo.push(baz);
 foo.push(qux);
@@ -351,74 +435,74 @@ foo.push(qux);
 console.log(foo.last.type) // 'qux'
 ```
 
+### [.depth](index.js#L525)
+
+Get the `node.depth`. The root node has a depth of 0. Add 1 to child nodes for each level of nesting.
+
 * `returns` **{Object}**: The last node, or undefiend
 
 **Example**
 
 ```js
-var foo = new Node({type: 'foo'});
-var bar = new Node({type: 'bar'});
-var baz = new Node({type: 'baz'});
-var qux = new Node({type: 'qux'});
+const foo = new Node({type: 'foo'});
 foo.push(bar);
-foo.push(baz);
-foo.push(qux);
 
-console.log(foo.last.type) // 'qux'
+console.log(foo.depth) // 1
+console.log(bar.depth) // 2
 ```
+
+### [Node#isNode](index.js#L545)
+
+Static method that returns true if the given value is a node.
+
+**Params**
+
+* `node` **{Object}**
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+const Node = require('snapdragon-node');
+const node = new Node({type: 'foo'});
+console.log(Node.isNode(node)); //=> true
+console.log(Node.isNode({})); //=> false
+```
+
+### Non-enumerable properties
+
+* `node.isNode` **{boolean}** - this value is set to `true` when a node is created. This can be useful in situationas as a fast alternative to using `instanceof Node` if you [need to determine](#nodeisnode) if a value is a `node` object.
+* `node.size` **{number}** - the number of child nodes that have been pushed or unshifted onto `node.nodes` using the node's API. This is useful for determining if nodes were added to `node.nodes` without using `node.push()` or `node.unshift()` (for example: `if (node.nodes && node.size !== node.nodes.length)`)
+* `node.parent` **{object}** (instance of Node)
 
 ## Release history
 
-Changelog entries are classified using the following labels from [keep-a-changelog](https://github.com/olivierlacan/keep-a-changelog):
-
-* `added`: for new features
-* `changed`: for changes in existing functionality
-* `deprecated`: for once-stable features removed in upcoming releases
-* `removed`: for deprecated features removed in this release
-* `fixed`: for any bug fixes
-
-Custom labels used in this changelog:
-
-* `dependencies`: bumps dependencies
-* `housekeeping`: code re-organization, minor edits, or other changes that don't fit in one of the other categories.
-
-### [2.0.0] - 2017-05-01
-
-**Changed**
-
-* `.unshiftNode` was renamed to [.unshift](#unshift)
-* `.pushNode` was renamed to [.push](#push)
-* `.getNode` was renamed to [.find](#find)
-
-**Added**
-
-* [.isNode](#isNode)
-* [.isEmpty](#isEmpty)
-* [.pop](#pop)
-* [.shift](#shift)
-* [.remove](#remove)
-
-### [0.1.0]
-
-First release.
+See [the changelog](changelog.md).
 
 ## About
 
-### Related projects
-
-* [breakdance](https://www.npmjs.com/package/breakdance): Breakdance is a node.js library for converting HTML to markdown. Highly pluggable, flexible and easy… [more](http://breakdance.io) | [homepage](http://breakdance.io "Breakdance is a node.js library for converting HTML to markdown. Highly pluggable, flexible and easy to use. It's time for your markup to get down.")
-* [snapdragon-capture](https://www.npmjs.com/package/snapdragon-capture): Snapdragon plugin that adds a capture method to the parser instance. | [homepage](https://github.com/jonschlinkert/snapdragon-capture "Snapdragon plugin that adds a capture method to the parser instance.")
-* [snapdragon-cheerio](https://www.npmjs.com/package/snapdragon-cheerio): Snapdragon plugin for converting a cheerio AST to a snapdragon AST. | [homepage](https://github.com/jonschlinkert/snapdragon-cheerio "Snapdragon plugin for converting a cheerio AST to a snapdragon AST.")
-* [snapdragon-util](https://www.npmjs.com/package/snapdragon-util): Utilities for the snapdragon parser/compiler. | [homepage](https://github.com/jonschlinkert/snapdragon-util "Utilities for the snapdragon parser/compiler.")
-* [snapdragon](https://www.npmjs.com/package/snapdragon): Easy-to-use plugin system for creating powerful, fast and versatile parsers and compilers, with built-in source-map… [more](https://github.com/jonschlinkert/snapdragon) | [homepage](https://github.com/jonschlinkert/snapdragon "Easy-to-use plugin system for creating powerful, fast and versatile parsers and compilers, with built-in source-map support.")
-
-### Contributing
+<details>
+<summary><strong>Contributing</strong></summary>
 
 Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](../../issues/new).
 
 Please read the [contributing guide](.github/contributing.md) for advice on opening issues, pull requests, and coding standards.
 
-### Building docs
+</details>
+
+<details>
+<summary><strong>Running Tests</strong></summary>
+
+Running and reviewing unit tests is a great way to get familiarized with a library and its API. You can install dependencies and run tests with the following command:
+
+```sh
+$ npm install && npm test
+```
+
+</details>
+
+<details>
+<summary><strong>Building docs</strong></summary>
 
 _(This project's readme.md is generated by [verb](https://github.com/verbose/verb-generate-readme), please don't edit the readme directly. Any changes to the readme must be made in the [.verb.md](.verb.md) readme template.)_
 
@@ -428,26 +512,31 @@ To generate the readme, run the following command:
 $ npm install -g verbose/verb#dev verb-generate-readme && verb
 ```
 
-### Running tests
+</details>
 
-Running and reviewing unit tests is a great way to get familiarized with a library and its API. You can install dependencies and run tests with the following command:
+### Related projects
 
-```sh
-$ npm install && npm test
-```
+You might also be interested in these projects:
+
+* [breakdance](https://www.npmjs.com/package/breakdance): Breakdance is a node.js library for converting HTML to markdown. Highly pluggable, flexible and easy… [more](http://breakdance.io) | [homepage](http://breakdance.io "Breakdance is a node.js library for converting HTML to markdown. Highly pluggable, flexible and easy to use. It's time for your markup to get down.")
+* [snapdragon-capture](https://www.npmjs.com/package/snapdragon-capture): Snapdragon plugin that adds a capture method to the parser instance. | [homepage](https://github.com/jonschlinkert/snapdragon-capture "Snapdragon plugin that adds a capture method to the parser instance.")
+* [snapdragon-cheerio](https://www.npmjs.com/package/snapdragon-cheerio): Snapdragon plugin for converting a cheerio AST to a snapdragon AST. | [homepage](https://github.com/jonschlinkert/snapdragon-cheerio "Snapdragon plugin for converting a cheerio AST to a snapdragon AST.")
+* [snapdragon-util](https://www.npmjs.com/package/snapdragon-util): Utilities for the snapdragon parser/compiler. | [homepage](https://github.com/here-be/snapdragon-util "Utilities for the snapdragon parser/compiler.")
+* [snapdragon](https://www.npmjs.com/package/snapdragon): Easy-to-use plugin system for creating powerful, fast and versatile parsers and compilers, with built-in source-map… [more](https://github.com/here-be/snapdragon) | [homepage](https://github.com/here-be/snapdragon "Easy-to-use plugin system for creating powerful, fast and versatile parsers and compilers, with built-in source-map support.")
 
 ### Author
 
 **Jon Schlinkert**
 
-* [github/jonschlinkert](https://github.com/jonschlinkert)
-* [twitter/jonschlinkert](https://twitter.com/jonschlinkert)
+* [GitHub Profile](https://github.com/jonschlinkert)
+* [Twitter Profile](https://twitter.com/jonschlinkert)
+* [LinkedIn Profile](https://linkedin.com/in/jonschlinkert)
 
 ### License
 
-Copyright © 2017, [Jon Schlinkert](https://github.com/jonschlinkert).
+Copyright © 2018, [Jon Schlinkert](https://github.com/jonschlinkert).
 Released under the [MIT License](LICENSE).
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.6.0, on June 25, 2017._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on November 24, 2018._

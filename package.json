@@ -1,6 +1,6 @@
 {
   "name": "snapdragon-node",
-  "description": "Snapdragon utility for creating a new AST node in custom code, such as plugins.",
+  "description": "Class for creating AST nodes.",
   "version": "2.1.1",
   "homepage": "https://github.com/here-be/snapdragon-node",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
@@ -17,16 +17,15 @@
     "node": ">=4"
   },
   "scripts": {
-    "test": "mocha"
-  },
-  "dependencies": {
-    "kind-of": "^6.0.0"
+    "test": "mocha",
+    "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
     "define-property": "^2.0.2",
-    "gulp-format-md": "^1.0.0",
-    "mocha": "3.5.2",
-    "snapdragon": "^0.11.0"
+    "gulp-format-md": "^2.0.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
+    "snapdragon": "^0.12.0"
   },
   "keywords": [
     "ast",

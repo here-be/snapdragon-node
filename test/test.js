@@ -1,12 +1,12 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var define = require('define-property');
-var Parser = require('snapdragon/lib/parser');
-var BaseNode = require('..');
-var parser;
-var ast;
+const assert = require('assert');
+const define = require('define-property');
+const Parser = require('snapdragon/lib/parser');
+const BaseNode = require('..');
+let parser;
+let ast;
 
 class Node extends BaseNode {
   define(key, value) {
@@ -17,25 +17,25 @@ class Node extends BaseNode {
 
 describe('snapdragon-node', function() {
   beforeEach(function() {
-    parser = new Parser({Node: Node})
+    parser = new Parser({ Node })
       .set('text', function() {
-        var match = this.match(/^[a-z]+/);
+        let match = this.match(/^[a-z]+/);
         if (match) {
           return this.node(match[0]);
         }
       })
       .set('slash', function() {
-        var match = this.match(/^\//);
+        let match = this.match(/^\//);
         if (match) {
           return this.node(match[0]);
         }
       })
       .set('star', function() {
-        var match = this.match(/^\*/);
+        let match = this.match(/^\*/);
         if (match) {
           return this.node(match[0]);
         }
-      })
+      });
 
     ast = new Node(parser.parse('a/*/c'));
   });
@@ -46,14 +46,14 @@ describe('snapdragon-node', function() {
     });
 
     it('should create a new Node with the given object', function() {
-      var node = new Node({value: '*', type: 'star'});
+      let node = new Node({ value: '*', type: 'star' });
       assert.equal(node.value, '*');
       assert.equal(node.type, 'star');
     });
 
     it('should create a new Node with the given position', function() {
-      var pos = parser.position();
-      var node = pos(new Node());
+      let pos = parser.position();
+      let node = pos(new Node());
 
       assert(node.position);
       assert(node.position.start);
@@ -66,8 +66,8 @@ describe('snapdragon-node', function() {
     });
 
     it('should create a new Node with the given position and value', function() {
-      var pos = parser.position();
-      var node = pos(new Node('*'));
+      let pos = parser.position();
+      let node = pos(new Node(null, '*'));
 
       assert.equal(node.value, '*');
 
@@ -82,8 +82,8 @@ describe('snapdragon-node', function() {
     });
 
     it('should create a new Node with the given position, type, and value', function() {
-      var pos = parser.position();
-      var node = pos(new Node('*', 'star'));
+      let pos = parser.position();
+      let node = pos(new Node('star', '*'));
 
       assert.equal(node.value, '*');
       assert.equal(node.type, 'star');
@@ -99,8 +99,8 @@ describe('snapdragon-node', function() {
     });
 
     it('should create a new Node with the given position and object', function() {
-      var pos = parser.position();
-      var node = pos(new Node({value: '*', type: 'star'}));
+      let pos = parser.position();
+      let node = pos(new Node({ value: '*', type: 'star' }));
 
       assert.equal(node.value, '*');
       assert.equal(node.type, 'star');
@@ -116,18 +116,18 @@ describe('snapdragon-node', function() {
     });
 
     it('should extend type and value onto a node', function() {
-      var node = new Node({type: 'foo', value: 'bar'});
+      let node = new Node({ type: 'foo', value: 'bar' });
       assert.equal(node.type, 'foo');
       assert.equal(node.value, 'bar');
     });
 
     it('should extend arbitrary properties onto a node', function() {
-      var node = new Node({type: 'foo', value: 'bar', baz: 'qux'});
+      let node = new Node({ type: 'foo', value: 'bar', baz: 'qux' });
       assert.equal(node.baz, 'qux');
     });
 
     it('should not extend existing getter properties onto a node', function() {
-      var node = new Node({type: 'foo', value: 'bar', index: 11});
+      let node = new Node({ type: 'foo', value: 'bar', index: 11 });
       assert.equal(node.index, -1);
     });
   });
@@ -146,7 +146,7 @@ describe('snapdragon-node', function() {
     });
 
     it('should return false when a node does not exist', function() {
-      var node = new Node('foo');
+      let node = new Node('foo');
       assert.equal(node.hasType('slslsllsls'), false);
     });
   });
@@ -158,7 +158,7 @@ describe('snapdragon-node', function() {
     });
 
     it('should return null when no nodes exist', function() {
-      var node = new Node('foo');
+      let node = new Node('foo');
       assert.equal(node.first, null);
     });
   });
@@ -170,17 +170,17 @@ describe('snapdragon-node', function() {
     });
 
     it('should return null when no nodes exist', function() {
-      var node = new Node('foo');
+      let node = new Node('foo');
       assert.equal(node.last, null);
     });
   });
 
   describe('.index', function() {
     it('should get the index of a node from node.parent.nodes', function() {
-      var foo = new Node({type: 'foo'});
-      var bar = new Node({type: 'bar'});
-      var baz = new Node({type: 'baz'});
-      var qux = new Node({type: 'qux'});
+      let foo = new Node({ type: 'foo' });
+      let bar = new Node({ type: 'bar' });
+      let baz = new Node({ type: 'baz' });
+      let qux = new Node({ type: 'qux' });
       foo.unshift(qux);
       foo.push(bar);
       foo.push(baz);
@@ -191,25 +191,25 @@ describe('snapdragon-node', function() {
     });
 
     it('should allow an index to be set but returns the correct index', function() {
-      var node = new Node('foo');
-      var foo = new Node('foo');
+      let node = new Node('foo');
+      let foo = new Node('foo');
       node.push(foo);
       foo.index = 42;
       assert.equal(foo.index, 0);
     });
 
     it('should return -1 when siblings do not exist', function() {
-      var foo = new Node('foo');
+      let foo = new Node('foo');
       assert.equal(foo.index, -1);
     });
   });
 
   describe('.siblings', function() {
     it('should get `node.parent.nodes`', function() {
-      var foo = new Node({type: 'foo'});
-      var bar = new Node({type: 'bar'});
-      var baz = new Node({type: 'baz'});
-      var qux = new Node({type: 'qux'});
+      let foo = new Node({ type: 'foo' });
+      let bar = new Node({ type: 'bar' });
+      let baz = new Node({ type: 'baz' });
+      let qux = new Node({ type: 'qux' });
       foo.push(bar);
       foo.push(baz);
       foo.unshift(qux);
@@ -222,7 +222,7 @@ describe('snapdragon-node', function() {
 
     it('should throw an error if set', function() {
       assert.throws(function() {
-        var node = new Node('foo');
+        let node = new Node('foo');
         node.siblings = [];
       });
     });
@@ -230,41 +230,41 @@ describe('snapdragon-node', function() {
 
   describe('.push', function() {
     it('should push nodes onto node.nodes', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       assert(!node.nodes);
-      node.push(new Node({type: 'a'}));
+      node.push(new Node({ type: 'a' }));
       assert.equal(node.nodes.length, 1);
-      node.push(new Node({type: 'b'}));
+      node.push(new Node({ type: 'b' }));
       assert.equal(node.nodes.length, 2);
-      node.push(new Node({type: 'c'}));
+      node.push(new Node({ type: 'c' }));
       assert.equal(node.nodes.length, 3);
-      node.push(new Node({type: 'd'}));
+      node.push(new Node({ type: 'd' }));
       assert.equal(node.nodes.length, 4);
     });
   });
 
   describe('.unshift', function() {
     it('should unshift nodes onto node.nodes', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       assert(!node.nodes);
-      node.unshift(new Node({type: 'a'}));
+      node.unshift(new Node({ type: 'a' }));
       assert.equal(node.nodes.length, 1);
-      node.unshift(new Node({type: 'b'}));
+      node.unshift(new Node({ type: 'b' }));
       assert.equal(node.nodes.length, 2);
-      node.unshift(new Node({type: 'c'}));
+      node.unshift(new Node({ type: 'c' }));
       assert.equal(node.nodes.length, 3);
-      node.unshift(new Node({type: 'd'}));
+      node.unshift(new Node({ type: 'd' }));
       assert.equal(node.nodes.length, 4);
     });
   });
 
   describe('.pop', function() {
     it('should remove the last node from node.nodes', function() {
-      var node = new Node({type: 'foo'});
-      node.push(new Node({type: 'a'}));
-      node.push(new Node({type: 'b'}));
-      node.push(new Node({type: 'c'}));
-      node.push(new Node({type: 'd'}));
+      let node = new Node({ type: 'foo' });
+      node.push(new Node({ type: 'a' }));
+      node.push(new Node({ type: 'b' }));
+      node.push(new Node({ type: 'c' }));
+      node.push(new Node({ type: 'd' }));
       assert.equal(node.nodes.length, 4);
 
       node.pop();
@@ -274,11 +274,11 @@ describe('snapdragon-node', function() {
 
   describe('.shift', function() {
     it('should remove the last node from node.nodes', function() {
-      var node = new Node({type: 'foo'});
-      node.push(new Node({type: 'a'}));
-      node.push(new Node({type: 'b'}));
-      node.push(new Node({type: 'c'}));
-      node.push(new Node({type: 'd'}));
+      let node = new Node({ type: 'foo' });
+      node.push(new Node({ type: 'a' }));
+      node.push(new Node({ type: 'b' }));
+      node.push(new Node({ type: 'c' }));
+      node.push(new Node({ type: 'd' }));
       assert.equal(node.nodes.length, 4);
 
       node.shift();
@@ -286,7 +286,7 @@ describe('snapdragon-node', function() {
     });
 
     it('should not blow up when no nodes exist', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       node.shift();
       assert(!node.nodes);
     });
@@ -294,18 +294,18 @@ describe('snapdragon-node', function() {
 
   describe('.remove', function() {
     it('should not do anything when a node does not exist', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       assert(!node.nodes);
-      node.remove(new Node({type: 'a'}))
+      node.remove(new Node({ type: 'a' }));
       assert(!node.nodes);
     });
 
     it('should remove the given node from node.nodes', function() {
-      var node = new Node({type: 'foo'});
-      var a = new Node({type: 'a'});
-      var b = new Node({type: 'b'});
-      var c = new Node({type: 'c'});
-      var d = new Node({type: 'd'});
+      let node = new Node({ type: 'foo' });
+      let a = new Node({ type: 'a' });
+      let b = new Node({ type: 'b' });
+      let c = new Node({ type: 'c' });
+      let d = new Node({ type: 'd' });
       node.push(a);
       node.push(b);
       node.push(c);
@@ -333,15 +333,15 @@ describe('snapdragon-node', function() {
   describe('.prev', function() {
     it('should throw an error when setter is set', function() {
       assert.throws(function() {
-        var node = new Node('foo');
+        let node = new Node('foo');
         node.prev = new Node('bar');
       });
     });
 
     it('should get the prev node from node.nodes', function() {
-      var foo = new Node({type: 'foo'});
-      var bar = new Node({type: 'bar'});
-      var baz = new Node({type: 'baz'});
+      let foo = new Node({ type: 'foo' });
+      let bar = new Node({ type: 'bar' });
+      let baz = new Node({ type: 'baz' });
 
       foo.push(bar);
       foo.push(baz);
@@ -351,14 +351,14 @@ describe('snapdragon-node', function() {
     });
 
     it('should get the prev node from `node.parent.nodes`', function() {
-      var parent = new Node({type: 'parent'});
+      let parent = new Node({ type: 'parent' });
 
-      var a = new Node({type: 'a'});
-      var z = new Node({type: 'z'});
+      let a = new Node({ type: 'a' });
+      let z = new Node({ type: 'z' });
 
-      var foo = new Node({type: 'foo'});
-      var bar = new Node({type: 'bar'});
-      var baz = new Node({type: 'baz'});
+      let foo = new Node({ type: 'foo' });
+      let bar = new Node({ type: 'bar' });
+      let baz = new Node({ type: 'baz' });
 
       foo.push(bar);
       foo.push(baz);
@@ -375,15 +375,15 @@ describe('snapdragon-node', function() {
   describe('.next', function() {
     it('should throw an error when setter is set', function() {
       assert.throws(function() {
-        var node = new Node('foo');
+        let node = new Node('foo');
         node.next = new Node('bar');
       });
     });
 
     it('should get the next node from `node.nodes`', function() {
-      var foo = new Node({type: 'foo'});
-      var bar = new Node({type: 'bar'});
-      var baz = new Node({type: 'baz'});
+      let foo = new Node({ type: 'foo' });
+      let bar = new Node({ type: 'bar' });
+      let baz = new Node({ type: 'baz' });
       foo.push(bar);
       foo.push(baz);
 
@@ -392,13 +392,13 @@ describe('snapdragon-node', function() {
     });
 
     it('should get the next node from `node.parent.nodes`', function() {
-      var parent = new Node({type: 'parent'});
-      var a = new Node({type: 'a'});
-      var z = new Node({type: 'z'});
+      let parent = new Node({ type: 'parent' });
+      let a = new Node({ type: 'a' });
+      let z = new Node({ type: 'z' });
 
-      var foo = new Node({type: 'foo'});
-      var bar = new Node({type: 'bar'});
-      var baz = new Node({type: 'baz'});
+      let foo = new Node({ type: 'foo' });
+      let bar = new Node({ type: 'bar' });
+      let baz = new Node({ type: 'baz' });
       foo.push(bar);
       foo.push(baz);
 
@@ -423,32 +423,32 @@ describe('snapdragon-node', function() {
     });
 
     it('should return null when a node does not exist', function() {
-      var node = new Node('foo');
+      let node = new Node('foo');
       assert.equal(node.find('slslsllsls'), null);
     });
   });
 
   describe('.push', function() {
     it('should add a node to `node.nodes`', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       ast.push(node);
       assert.equal(ast.last.type, 'foo');
     });
 
     it('should set the parent on the given node', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       ast.push(node);
       assert(ast === node.parent);
     });
 
     it('should set the parent.nodes as siblings', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       ast.push(node);
       assert.equal(node.siblings.length, 8);
     });
 
     it('should get the node.index from siblings', function() {
-      var node = new Node({type: 'foo'});
+      let node = new Node({ type: 'foo' });
       ast.push(node);
       assert.equal(node.index, 7);
     });
@@ -456,9 +456,9 @@ describe('snapdragon-node', function() {
 
   describe('.remove', function() {
     it('should remove a node from `node.nodes`', function() {
-      var node = new Node({type: 'brace', nodes: []});
+      let node = new Node({ type: 'brace', nodes: [] });
 
-      var two = new Node('two', 'text');
+      let two = new Node('two', 'text');
       node.push(new Node('one', 'text'));
       node.push(two);
       node.push(new Node('three', 'text'));

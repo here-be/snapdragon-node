@@ -13,13 +13,25 @@ Custom labels used in this changelog:
 * `dependencies`: bumps dependencies
 * `housekeeping`: code re-organization, minor edits, or other changes that don't fit in one of the other categories.
 
-## [2.1.0] - 2017-11-14
+## 3.0.0 - 2018-11-24
+
+**Removed**
+
+- `node.define` was removed. Use [define-property](https://github.com/jonschlinkert/define-property) or `Object.defineProperty` instead.
+
+**Added**
+
+- `node.isEmpty` method
+- `node.clone` method, for cloning the node
+- `node.stringify` method, for returning a string from `node.value` and/or from recursing over child nodes. 
+
+## 2.1.0 - 2017-11-14
 
 **Deprecated**
 
 - `node.define` is deprecated and will be removed in v3.0.0. Use [define-property](https://github.com/jonschlinkert/define-property) or `Object.defineProperty` instead.
 
-## [2.0.0] - 2017-05-01
+## 2.0.0 - 2017-05-01
 
 **Changed**
 
@@ -35,7 +47,7 @@ Custom labels used in this changelog:
 - [.shift](readme.md#shift)
 - [.remove](readme.md#remove)
 
-### [0.1.0]
+### 0.1.0
 
 First release.
 
